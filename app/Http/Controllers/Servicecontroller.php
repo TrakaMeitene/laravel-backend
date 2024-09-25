@@ -34,5 +34,13 @@ class Servicecontroller extends Controller
         return $services;
     }
 
+    public function getservicebyid(Request $request)
+    {
+        $userDetails = Auth::user();
+        $service = $userDetails->services->where('id', $request->service)->first();
+
+        return $service;
+    }
+
 
 }

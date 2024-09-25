@@ -56,16 +56,21 @@ class User extends Authenticatable
 
     public function settings()
     {
-        return $this->hasMany(Settings::class, 'user','id');
+        return $this->hasMany(Settings::class, 'user', 'id');
     }
 
     public function vacation()
     {
-        return $this->hasMany(Vacation::class, 'user','id');
+        return $this->hasMany(Vacation::class, 'user', 'id');
     }
 
     public function services(): HasMany
     {
-        return $this->hasMany(Service::class,'user','id');
+        return $this->hasMany(Service::class, 'user', 'id');
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'user', 'id');
     }
 }

@@ -15,7 +15,7 @@ class VacationController extends Controller
         foreach ($request->all() as $key => $value) {
 
             $newformat = Carbon::parse($value)->setTimezone('Europe/Riga')->format('Y-m-d');
-            
+
             $user->vacation()->Create([
                 'date' => $newformat,
                 'user' => $user->id,
@@ -28,11 +28,16 @@ class VacationController extends Controller
     public function GetVacation(Request $request)
     {
         $user = Auth::user();
-        $start = Carbon::parse($request->start)->setTimezone('Europe/Riga')->format('Y-m-d');
-        $end = Carbon::parse($request->end)->setTimezone('Europe/Riga')->format('Y-m-d');
-
+        if ($request->start) {
+            $start = Carbon::parse($request->start)->setTimezone('Europe/Riga')->format('Y-m-d');
+            $end = Carbon::parse($request->end)->setTimezone('Europe/Riga')->format('Y-m-d');
+        } else {
+            $start = Carbon::parse($request[0])->setTimezone('Europe/Riga')->format('Y-m-d');
+            $end = Carbon::parse($request[6])->setTimezone('Europe/Riga')->format('Y-m-d');
+        }
 
         $items = Vacation::whereBetween('created_at', [$start, $end])->get();
         return $items;
     }
+
 }

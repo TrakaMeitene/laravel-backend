@@ -15,6 +15,7 @@ class Servicecontroller extends Controller
     {
         $userDetails = Auth::user();  // To get the logged-in user details
         $user = User::find($userDetails->id);
+        
         $service = Service::updateOrCreate([
             'name' => $request->input('name'),
             'price' => $request->input('price'),

@@ -15,13 +15,13 @@ class Servicecontroller extends Controller
     {
         $userDetails = Auth::user();  // To get the logged-in user details
         $user = User::find($userDetails->id);
-        
+
         $service = Service::updateOrCreate([
             'name' => $request->input('name'),
             'price' => $request->input('price'),
-            'time'=> $request->input('time'),
+            'time' => $request->input('time'),
             'description' => $request->input('description'),
-            'user'=> $user->id,
+            'user' => $user->id,
         ]);
         return $service;
     }
@@ -41,6 +41,14 @@ class Servicecontroller extends Controller
         $service = $userDetails->services->where('id', $request->service)->first();
 
         return $service;
+    }
+
+    public function getservicesforspecialist(Request $request)
+    {
+        $userid = $request->id;
+        $user = User::find($userid);
+        $services = $user->services;
+        return $services;
     }
 
 

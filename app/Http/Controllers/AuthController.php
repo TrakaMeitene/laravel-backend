@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Requests;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        info($request);
 
         $request->validate([
             'Email' => 'email|required',
@@ -25,6 +24,7 @@ class AuthController extends Controller
             'email' => $request->input('Email'),
             'password' => bcrypt($request->input('Password')),
             'scope' => $request->input('scope'),
+            'urlname' => $request->input('urlname'),
         ]);
 
         $token = $user->createToken($request->Name);

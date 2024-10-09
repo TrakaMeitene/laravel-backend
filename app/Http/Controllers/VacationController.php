@@ -36,7 +36,7 @@ class VacationController extends Controller
             $end = Carbon::parse($request[6])->setTimezone('Europe/Riga')->format('Y-m-d');
         }
 
-        $items = Vacation::whereBetween('created_at', [$start, $end])->get();
+        $items = Vacation::whereBetween('date', [$start, $end])->get();
         return $items;
     }
 

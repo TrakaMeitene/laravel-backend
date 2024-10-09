@@ -15,7 +15,6 @@ class BookingsController extends Controller
         $date = Carbon::parse($request->date);
 
         $servicetime = $user->services->where('id', $request->service)->first();
-        info($servicetime);
         $time = $servicetime->time;
         $dateforend = clone $date->setTimezone('Europe/Riga');
         $end = $dateforend->addMinutes($time);
@@ -41,7 +40,6 @@ class BookingsController extends Controller
     public function getbookings(Request $request)
     {
         $user = Auth::user();
-        $data = $user->booking;
         $bookings = $user->bookings;
 
         foreach ($bookings as $key => $value) {

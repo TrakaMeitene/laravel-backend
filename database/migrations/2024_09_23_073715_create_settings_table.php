@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->string('day');
+            $table->integer('day');
             $table->boolean('statuss');
             $table->string('from');
             $table->string('to');

@@ -6,18 +6,26 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        info($request);
+   
 
-        $request->validate([
-            'Email' => 'email|required',
+        $validator = Validator::make($request->all(), [
+            'Email' => 'email|required| unique:users',
             'Password' => 'required',
             'Name' => 'required',
         ]);
+
+        if ($validator->fails()) {
+            return  [
+                'message' => 'Nepareizs e-pasts!',
+            ];
+        }
 
         $user = User::create([
             'name' => $request->input('Name'),
@@ -26,6 +34,7 @@ class AuthController extends Controller
             'scope' => $request->input('scope'),
             'urlname' => $request->input('urlname'),
         ]);
+
 
         $token = $user->createToken($request->Name);
 

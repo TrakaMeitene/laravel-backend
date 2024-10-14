@@ -15,6 +15,7 @@ class Booking extends Model
         'date',
         'service',
         'end',
-        'user'
+        'user',
+        'made_by',
     ];
 }

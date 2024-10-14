@@ -43,6 +43,8 @@ class Servicecontroller extends Controller
         return $service;
     }
 
+   
+
     public function getservicesforspecialist(Request $request)
     {
         $userid = $request->id;

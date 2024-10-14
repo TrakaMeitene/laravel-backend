@@ -6,15 +6,25 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Booking;
-
+use App\Models\User;
 class BookingsController extends Controller
 {
     public function Savebooking(Request $request)
     {
         $user = Auth::user();
         $date = Carbon::parse($request->date);
+        $specialist = User::find($request->specialist);
 
-        $servicetime = $user->services->where('id', $request->service)->first();
+
+        switch($user->scope) {
+            case "all":
+                $servicetime = $specialist->services->where('id', $request->service)->first();
+                break;
+            case "business":
+                $servicetime = $user->services->where('id', $request->service)->first();
+                break;
+        }
+
         $time = $servicetime->time;
         $dateforend = clone $date->setTimezone('Europe/Riga');
         $end = $dateforend->addMinutes($time);
@@ -22,13 +32,14 @@ class BookingsController extends Controller
         $items = $allbookings->whereBetween('end', [$date, $end]);
 
         if ($items->isEmpty()) {
-            $booking = Booking::Create([
+            $booking = Booking::create([
                 'title' => $request->input('title'),
                 'date' => $date->setTimezone('Europe/Riga'),
                 'description' => $request->input('description'),
                 'service' => $request->input('service'),
                 'end' => $end,
-                'user' => $user->id,
+                'user' => $specialist ? $specialist->id : $user->id,
+                'made_by' => $user->id
             ]);
         } else {
             $booking = 'Izvēlētajā laikā jau ir rezervācija. Lūdzu izvēlieties citu laiku.';

@@ -54,7 +54,7 @@ class SpecialistsController extends Controller
             $breakstartdate = Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $breakFrom[0])->addMinutes((int) $breakFrom[1]);
             $breakenddate = Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $breakTo[0])->addMinutes((int) $breakTo[1]);
             $breakinterval = CarbonInterval::minutes(60)->toPeriod($breakstartdate, $breakenddate->addMinutes(-1))->toArray();
-            $interval = CarbonInterval::minutes(60)->toPeriod(Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0] - 1)->addMinutes((int) $endTimechunks[1] + 59))->toArray();
+            $interval = CarbonInterval::minutes(60)->toPeriod(Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0] )->addMinutes((int) $endTimechunks[1] ))->toArray();
 
             $timesWithoutBreak = array_values(array_diff($interval, $breakinterval));
 
@@ -81,22 +81,17 @@ class SpecialistsController extends Controller
             });
 
 
-
-            // main = $imeswithinworkingtime
-            //item = $serviceneedetimes
-
-            $ss = $serviceNeededTimes->map(function ($time, $key) use ($timesWithinWorkingTime) {
-                if (count(array_intersect($time->toArray(), $timesWithinWorkingTime->toArray())) !== count($time->toArray())) {
-                    $result = $time->filter(function ($item, $key) use ($timesWithinWorkingTime, $time) {
-                       // info($item);
-                        return in_array($item, $timesWithinWorkingTime->toArray());
-
-                    });
-                    return $result;
+            $particulartimechucksToremove = $serviceNeededTimes->map(function ($time, $key) use ($timesWhitoutBookings) {
+                if (count(array_intersect($time->toArray(), $timesWhitoutBookings->toArray())) !== count($time->toArray())) {
+                    return $time;
                 };
+            }); 
+
+            $timesFromChunksToRemove = $particulartimechucksToremove->map(function ($time, $key) use ($serviceNeededTimes) {
+                return $time ? $time->toArray()[0] : null;
             });
 
-            info($ss->filter());
+            $timestoreturn = $timesWithinWorkingTime->diff($timesFromChunksToRemove); 
 
             $times->push([
                 'date' => $date,
@@ -104,8 +99,8 @@ class SpecialistsController extends Controller
                 'isDayVacation' => $isDayVacation->count() === 1 ? true : false,
                 'start' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]),
                 'end' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]),
-                'interval' => $timesWithinWorkingTime,
-                'ss'=>$ss
+                'interval' => $timestoreturn->flatten(),
+                'ss' => $timesWithinWorkingTime
 
             ]);
         }

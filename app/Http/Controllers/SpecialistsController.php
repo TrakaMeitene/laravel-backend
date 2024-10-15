@@ -74,14 +74,14 @@ class SpecialistsController extends Controller
                 }
             });
 
-            $timesWithinWorkingTime = $timesWhitoutBookings->diff($timesThatOverlapWorkingtime)->flatten();
+            $timesWithinWorkingTime = $timesWhitoutBookings->diff($timesThatOverlapWorkingtime)->flatten(); 
 
-            $serviceNeededTimes = $timesWithinWorkingTime->map(function ($time, $key) use ($serviceduration) {
-                return CarbonInterval::minutes(60)->toPeriod($time, CarbonImmutable::parse($time)->addMinutes($serviceduration))->setTimezone('Europe/Riga');
+            $serviceNeededTimes = $timesWhitoutBookings->map(function ($time, $key) use ($serviceduration) {
+                return CarbonInterval::minutes(60)->toPeriod($time, CarbonImmutable::parse($time)->addMinutes($serviceduration -1))->setTimezone('Europe/Riga');
             });
 
-
             $particulartimechucksToremove = $serviceNeededTimes->map(function ($time, $key) use ($timesWhitoutBookings) {
+                info(collect($time->toArray()));
                 if (count(array_intersect($time->toArray(), $timesWhitoutBookings->toArray())) !== count($time->toArray())) {
                     return $time;
                 };
@@ -89,7 +89,7 @@ class SpecialistsController extends Controller
 
             $timesFromChunksToRemove = $particulartimechucksToremove->map(function ($time, $key) use ($serviceNeededTimes) {
                 return $time ? $time->toArray()[0] : null;
-            });
+            }); 
 
             $timestoreturn = $timesWithinWorkingTime->diff($timesFromChunksToRemove); 
 
@@ -100,8 +100,6 @@ class SpecialistsController extends Controller
                 'start' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]),
                 'end' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]),
                 'interval' => $timestoreturn->flatten(),
-                'ss' => $timesWithinWorkingTime
-
             ]);
         }
 

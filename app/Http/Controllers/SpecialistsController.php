@@ -37,8 +37,8 @@ class SpecialistsController extends Controller
         $user = User::where('id', $request->userid)->first();
         $range = $request->range;
         $serviceduration = $user->services->find($request->service)->time;
-        $hasBookings = $user->bookings->whereBetween('date', [$range[0], Carbon::parse($range[7])->setTimezone('Europe/Riga')->addHours(23)->addMinutes(59)])->flatten();
-
+        $hasBookings = $user->bookings->whereBetween('date', [$range[0], Carbon::parse($range[7 || 3])->setTimezone('Europe/Riga')->addHours(23)->addMinutes(59)])->flatten();
+info($range);
         $times = collect();
         $bookings = $hasBookings->map(function ($booking, $key) {
             return CarbonInterval::minutes(60)->toPeriod(Carbon::parse($booking->date)->setTimezone('Europe/Riga'), Carbon::parse($booking->end)->setTimezone('Europe/Riga'));
@@ -95,7 +95,7 @@ class SpecialistsController extends Controller
 
             $times->push([
                 'date' => $date,
-                'isDayFree' => $daySettings[0]->statuss,
+                'isDayFree' => $daySettings[0]->statuss === 1 ? true : false,
                 'isDayVacation' => $isDayVacation->count() === 1 ? true : false,
                 'start' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]),
                 'end' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]),

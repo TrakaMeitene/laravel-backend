@@ -20,6 +20,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'personalnr',
         'email',
         'password',
         'picture',
@@ -30,7 +31,8 @@ class User extends Authenticatable
         'bio',
         'occupation',
         'city',
-        'urlname'
+        'urlname',
+        'bank'
     ];
 
     /**
@@ -74,5 +76,30 @@ class User extends Authenticatable
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'user', 'id');
+    }
+
+    public function activeBookings(): HasMany
+    {
+        return $this->bookings()->where('statuss', 'active');
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'user', 'id');
+    }
+
+    public function customerInvoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'customer', 'id');
+    }
+
+    public function specialistInvoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'user', 'id');
+    }
+
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Clients::class, 'specialist', 'id');
     }
 }

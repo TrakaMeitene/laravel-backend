@@ -28,17 +28,25 @@ class SpecialistsController extends Controller
     {
         $name = $request->name;
         $specialistbyname = User::where(['urlname' => $name])->get();
-
+        
         return $specialistbyname;
+    }
+
+    public function getspecialistbyid(Request $request)
+    {
+        $id = $request->id;
+        $specialistbyid = User::where('id', $id )->get();
+
+        return $specialistbyid[0];
     }
 
     public function getSpecialistsTimes(Request $request)
     {
-        $user = User::where('id', $request->userid)->first();
+       $user = User::where('id', $request->userid)->first();
         $range = $request->range;
         $serviceduration = $user->services->find($request->service)->time;
-        $hasBookings = $user->bookings->whereBetween('date', [$range[0], Carbon::parse($range[7 || 3])->setTimezone('Europe/Riga')->addHours(23)->addMinutes(59)])->flatten();
-info($range);
+        $hasBookings = $user->activeBookings->whereBetween('date', [$range[0], Carbon::parse(last($range))->setTimezone('Europe/Riga')->addHours(23)->addMinutes(59)])->flatten();
+
         $times = collect();
         $bookings = $hasBookings->map(function ($booking, $key) {
             return CarbonInterval::minutes(60)->toPeriod(Carbon::parse($booking->date)->setTimezone('Europe/Riga'), Carbon::parse($booking->end)->setTimezone('Europe/Riga'));
@@ -54,8 +62,7 @@ info($range);
             $breakstartdate = Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $breakFrom[0])->addMinutes((int) $breakFrom[1]);
             $breakenddate = Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $breakTo[0])->addMinutes((int) $breakTo[1]);
             $breakinterval = CarbonInterval::minutes(60)->toPeriod($breakstartdate, $breakenddate->addMinutes(-1))->toArray();
-            $interval = CarbonInterval::minutes(60)->toPeriod(Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0] )->addMinutes((int) $endTimechunks[1] ))->toArray();
-
+            $interval = CarbonInterval::minutes(60)->toPeriod(Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]))->toArray();
             $timesWithoutBreak = array_values(array_diff($interval, $breakinterval));
 
             $bookingsRemoved = $bookings->map(function ($booking) use ($date, $timesWithoutBreak) {
@@ -74,24 +81,42 @@ info($range);
                 }
             });
 
-            $timesWithinWorkingTime = $timesWhitoutBookings->diff($timesThatOverlapWorkingtime)->flatten(); 
+            $timesWithinWorkingTime = $timesWhitoutBookings->diff($timesThatOverlapWorkingtime)->flatten();
 
             $serviceNeededTimes = $timesWhitoutBookings->map(function ($time, $key) use ($serviceduration) {
-                return CarbonInterval::minutes(60)->toPeriod($time, CarbonImmutable::parse($time)->addMinutes($serviceduration -1))->setTimezone('Europe/Riga');
+                return CarbonInterval::minutes(60)->toPeriod($time, CarbonImmutable::parse($time)->addMinutes($serviceduration - 1))->setTimezone('Europe/Riga');
             });
 
             $particulartimechucksToremove = $serviceNeededTimes->map(function ($time, $key) use ($timesWhitoutBookings) {
-                info(collect($time->toArray()));
                 if (count(array_intersect($time->toArray(), $timesWhitoutBookings->toArray())) !== count($time->toArray())) {
                     return $time;
                 };
-            }); 
+            });
 
             $timesFromChunksToRemove = $particulartimechucksToremove->map(function ($time, $key) use ($serviceNeededTimes) {
                 return $time ? $time->toArray()[0] : null;
-            }); 
+            });
 
-            $timestoreturn = $timesWithinWorkingTime->diff($timesFromChunksToRemove); 
+            $timestoreturn = $timesWithinWorkingTime->diff($timesFromChunksToRemove);
+
+            $vacations = $isDayVacation->map(function ($data, $key) {
+                return Carbon::parse($data->date)->toISOString();
+            });
+
+
+            $timesWithoutVacations = $timesWithinWorkingTime->filter(function ($data) use ($vacations, $timesWithinWorkingTime) {
+                $ss = $vacations->map(function ($time) use ($data,$timesWithinWorkingTime) {
+                  //  info(message: Carbon::parse($time)->setTimezone('Europe/Riga')->format('Y-m-d') . " - " . Carbon::parse($data)->format('Y-m-d'));
+
+                    if (Carbon::parse($time)->setTimezone('Europe/Riga')->format('Y-m-d') === Carbon::parse($data)->format('Y-m-d')) {
+                        return $time;
+                    };
+
+                });
+           
+
+                return $ss;
+            });
 
             $times->push([
                 'date' => $date,

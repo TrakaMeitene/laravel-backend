@@ -17,5 +17,22 @@ class Booking extends Model
         'end',
         'user',
         'made_by',
+        'statuss',
+
     ];
+
+    public function specialist()
+    {
+        return $this->belongsTo(User::class, 'user', 'id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'id', 'made_by');
+    }
+
+    public function service()
+    {
+        return $this->belongsTo( Service::class, 'service', 'id');
+    }
 }

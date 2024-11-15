@@ -13,9 +13,9 @@ class Servicecontroller extends Controller
 {
     public function addservice(Request $request)
     {
+        info($request);
         $userDetails = Auth::user();  // To get the logged-in user details
         $user = User::find($userDetails->id);
-
         $service = Service::updateOrCreate([
             'name' => $request->input('name'),
             'price' => $request->input('price'),
@@ -51,6 +51,17 @@ class Servicecontroller extends Controller
         $user = User::find($userid);
         $services = $user->services;
         return $services;
+    }
+
+    public function deleteservice(Request $request, $id)
+    {
+
+        $service = Service::findOrFail($id);
+        if($service)
+           $service->delete(); 
+        else
+            return response();
+
     }
 
 

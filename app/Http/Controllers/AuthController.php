@@ -33,6 +33,8 @@ class AuthController extends Controller
             'password' => bcrypt($request->input('Password')),
             'scope' => $request->input('scope'),
             'urlname' => $request->input('urlname'),
+            'personalnr' =>$request->input('personalnr'),
+            'bank' =>$request->input('bank')
         ]);
 
 

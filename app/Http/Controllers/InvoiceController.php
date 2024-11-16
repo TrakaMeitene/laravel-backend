@@ -77,7 +77,8 @@ class InvoiceController extends Controller
             'serial_number' => $serialNumber,
             'service' => $service->name,
             'price' => $service->price,
-            'external_customer' => " "
+            'external_customer' => " ",
+            'booking' => $request->booking
         ]);
 
 
@@ -90,12 +91,16 @@ class InvoiceController extends Controller
     public function getCustomerInvoices(Request $request)
     {
         $user = Auth::user();
-        $res = collect();
 
-        //  $invoices = $user->customerInvoices->load('specialist')->sortBy('created_at', SORT_REGULAR, 'desc');
         $page = $request->current;
-        $invoices = Bill::with(relations: ['specialist'])->where('customer', $user->id)->paginate(4, ['*'], 'page', $page);
-
+        $invoices = Bill::orderBy('created_at', 'DESC')->with(relations: ['specialist'])->where('customer', $user->id)->whereBetween(
+            'created_at',
+            [
+                Carbon::createFromDate(2024, $request->month, 1, 'Europe/Riga'),
+                Carbon::createFromDate(2024, $request->month, 31, 'Europe/Riga')
+            ]
+        )->paginate(4, ['*'], 'page', $page);
+       
         return $invoices;
     }
 

@@ -19,7 +19,8 @@ class Invoice extends Model
         'serial_number',
         'service',
         'price',
-        'external_customer'
+        'external_customer',
+        'booking'
     ];
 
     public function specialist()

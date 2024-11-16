@@ -107,7 +107,7 @@ return [
     | used globally for all emails that are sent by your application.
     |
     */
-    'from' => ['address' => 'mail@demomailtrap.com', 'name' => 'Pieraksts Pie']
+    'from' => ['address' => 'mail@pierakstspie.lv', 'name' => 'Pieraksts Pie']
     // 'from' => [
     //     'address' => env('MAIL_FROM_ADDRESS', 'sandra@sandra.lv'),
     //     'name' => env('MAIL_FROM_NAME', 'Example'),

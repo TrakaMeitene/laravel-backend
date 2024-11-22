@@ -20,7 +20,8 @@ class Invoice extends Model
         'service',
         'price',
         'external_customer',
-        'booking'
+        'booking',
+        'created_at'
     ];
 
     public function specialist()

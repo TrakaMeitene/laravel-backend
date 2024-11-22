@@ -13,6 +13,17 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    'facebook' => [
+    'client_id' => env('FACEBOOK_CLIENT_ID'),
+    'client_secret' => env('FACEBOOK_APP_SECRET'),
+    'redirect' => 'http://localhost:8000/api/login/facebook/callback'
+],
+
+'google' => [
+    'client_id' => env('GOOGLE_CLIENT_ID'),
+    'client_secret' => env('GOOGLE_APP_SECRET'),
+    'redirect' => 'http://localhost:8000/api/login/facebook/callback'
+],
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),

@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -48,10 +52,18 @@ class AuthController extends Controller
 
     public function logins(Request $request)
     {
-        $request->validate([
+
+        $validator = Validator::make($request->all(),[
             'email' => 'required|email|exists:users',
             'password' => 'required',
+         ], [
+            'email.exists' => 'The provided email does not match our records.',
         ]);
+
+        if ($validator->fails()) {
+            return   ['message' => 'Nepareizs e-pasts!']; 
+        }
+
         $user = User::where(['email' => $request->email, 'scope' => $request->scope])->first();
 
         if (!$user || Hash::check($request->password, $user->password)) {
@@ -98,4 +110,122 @@ class AuthController extends Controller
 
         return $user;
     }
+
+    public function redirectToFacebook()
+    {
+        return Socialite::driver('facebook')->stateless()->redirect();
+    }
+
+    public function handleFacebookCallback()
+    {
+        try {
+            
+            $user = Socialite::driver('facebook')->stateless()->user();
+            $finduser = User::where('email', $user->email)->first();
+        
+            if ($finduser) {
+                Auth::login($finduser);
+                $token = $finduser->createToken($user->email);
+
+            
+                User::where('email', $user->email)->update([
+                    'facebook_id' => $user->id
+                ]);
+            
+                return redirect()->intended('http://localhost:3000/');
+            } else {
+                $newUser = User::create([
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'facebook_id'=> $user->id,
+                    'password' => encrypt('123456dummy')
+                ]);
+        
+
+                Auth::login($newUser);
+                return redirect()->intended('http://localhost:3000/');
+            }
+
+       
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->stateless()->redirect();
+    }
+
+
+    public function handleGoogleCallback()
+    {
+        $googleUser = Socialite::driver('google')->stateless()->user();
+        $user = User::where('email', $googleUser->email)->first();
+        if(!$user)
+        {
+            $user = User::create(['name' => $googleUser->name, 'email' => $googleUser->email, 'password' => \Hash::make(rand(100000,999999))]);
+        }
+
+        Auth::login($user);
+
+        return redirect('http://localhost:3000/');
+    }
+
+    public function recoveremail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+     
+       if($status === Password::RESET_LINK_SENT){
+        return ['status' => __("Esam nosūtījuši Jums e-pastā saiti!")];
+       }
+
+    }
+
+    public function passwordreset(Request $request)
+    {
+        info( $request);
+
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password2', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+     
+                $user->save();
+     
+                event(new PasswordReset($user));
+            }
+        );
+
+    info($status);
+    if ($status == Password::PASSWORD_RESET) {
+        return response([
+            'status'=> 'Password reset successfully'
+        ]);
+    }
+
+    return response([
+        'status'=> __($status)
+    ]);
+    //   if($status === Password::PASSWORD_RESET)
+    //   {
+    //     return ['status' => __("Parole nomainīta!")];
+    //   } else{
+    //     return ['status' => __("Kaut kas nogāja greizi! Mēģini vēlreiz!")];
+
+    //   }
+    }
+
 }

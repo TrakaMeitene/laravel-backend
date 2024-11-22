@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use App\Models\Invoice as Bill;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Invoice as InvoiceMail;
+use Illuminate\Pagination\Paginator;
 
 class InvoiceController extends Controller
 {
@@ -93,23 +94,33 @@ class InvoiceController extends Controller
         $user = Auth::user();
 
         $page = $request->current;
-        $invoices = Bill::orderBy('created_at', 'DESC')->with(relations: ['specialist'])->where('customer', $user->id)->whereBetween(
-            'created_at',
-            [
-                Carbon::createFromDate(2024, $request->month, 1, 'Europe/Riga'),
-                Carbon::createFromDate(2024, $request->month, 31, 'Europe/Riga')
-            ]
-        )->paginate(4, ['*'], 'page', $page);
-       
+
+        if ($request->month) {
+            $invoices = Bill::orderBy('created_at', 'DESC')->with(relations: ['specialist'])->where('customer', $user->id)->whereBetween(
+                'created_at',
+                [
+                    Carbon::createFromDate(2024, $request->month, 1, 'Europe/Riga'),
+                    Carbon::createFromDate(2024, $request->month, 31, 'Europe/Riga')
+                ]
+            )->paginate(4, ['*'], 'page');
+
+        } else {
+            $invoices = Bill::orderBy('created_at', 'DESC')->with(relations: ['specialist'])->where('customer', $user->id)
+                ->paginate(4, ['*'], 'page', $page);
+        }
+
+
         return $invoices;
     }
 
     public function getSpecialistInvoices(Request $request)
     {
-
-        $user = Auth::user();
         $page = $request->current;
         if ($request->month) {
+            if ($request->prevmonth != $request->month || $request->prevType != $request->type) {
+                $page = 1;
+            }
+
             $invoices = Bill::with(relations: ['customer'])
                 ->whereBetween(
                     'created_at',
@@ -118,12 +129,24 @@ class InvoiceController extends Controller
                         Carbon::createFromDate(2024, $request->month, 31, 'Europe/Riga')
                     ]
                 )
+                ->where('type', operator: $request->type === "Izdevumi" ? "expenses" : "income")
                 ->orderBy('created_at', 'desc')
                 ->paginate(4, ['*'], 'page', $page);
+
         } else {
-            $invoices = Bill::with(relations: ['customer'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(4, ['*'], 'page', $page);
+            if($request->prevType != $request->type) {
+                $page = 1;
+            };
+            if ($request->type != "Ieņēmumi/izdevumi") {
+                $invoices = Bill::with(relations: ['customer'])
+                    ->where('type', operator: $request->type === "Izdevumi" ? "expenses" : "income")
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(4, ['*'], 'page', $page);
+            } else {
+                $invoices = Bill::with(relations: ['customer'])
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(4, ['*'], 'page', $page);
+            }
         }
 
         return $invoices;
@@ -147,7 +170,7 @@ class InvoiceController extends Controller
     {
         $user = Auth::user();
         $invoices = $user->specialistInvoices;
-        $total = collect(value: $invoices)->sum('price') / 100;
+        $total = collect($invoices)->where('type', "income")->sum('price') / 100;
         $unpaid = collect($invoices)->where('paid_date', null)->sum('price') / 100;
         $data = collect();
 
@@ -159,12 +182,22 @@ class InvoiceController extends Controller
             ]
         )->sum('price') / 100;
 
+        $expenses = collect($invoices)->where('type', 'expenses')->sum('price') / 100;
+        $thismonthExpenses = collect($invoices)->whereBetween(
+            'created_at',
+            [
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth()
+            ]
+        )->where('type', 'expenses')->sum('price') / 100;
+
         $data->push(
             [
                 'total' => $total,
                 'unpaid' => $unpaid,
-                'thismonth' => $thismonthSum
-
+                'thismonth' => $thismonthSum,
+                'expenses' => $expenses,
+                'thismonthexpenses' => $thismonthExpenses
             ]
 
         );
@@ -173,6 +206,7 @@ class InvoiceController extends Controller
 
     public function saveexternalinvoice(Request $request)
     {
+        info($request);
         $user = Auth::user();
         $path = "";
 
@@ -190,8 +224,9 @@ class InvoiceController extends Controller
             'customer' => 0,
             'external_customer' => $request->customer,
             'serial_number' => $request->documentNr,
-            'service' => "",
-            'price' => $sum
+            'service' => $request->service == null ? "" : $request->service,
+            'price' => $sum,
+            'type' => "expenses"
 
         ]);
         return $invoice;

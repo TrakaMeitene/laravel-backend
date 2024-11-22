@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\ResetPasswordNotification;
 
 class User extends Authenticatable
 {
@@ -32,7 +33,9 @@ class User extends Authenticatable
         'occupation',
         'city',
         'urlname',
-        'bank'
+        'bank',
+        'facebook_id',
+
     ];
 
     /**
@@ -101,5 +104,13 @@ class User extends Authenticatable
     public function clients(): HasMany
     {
         return $this->hasMany(Clients::class, 'specialist', 'id');
+    }
+
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $url = 'http://localhost:3000/login/renewpassword?token='.$token;
+     
+        $this->notify(new ResetPasswordNotification($url));
     }
 }

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoice', function (Blueprint $table) {
-    
-            $table->dateTime( 'paid_date')->nullable()->change();
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('facebook_id')->nullable()->unique();
+
         });
     }
 
@@ -22,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('users', function (Blueprint $table) {
+            //
+        });
     }
 };

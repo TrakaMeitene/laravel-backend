@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoice', function (Blueprint $table) {
-    
-            $table->dateTime( 'paid_date')->nullable()->change();
+            $table->string('type')->default('income');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('invoice', function (Blueprint $table) {
+            //
+        });
     }
 };

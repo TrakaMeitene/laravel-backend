@@ -3,7 +3,6 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\MailController;
 use App\Http\Controllers\Servicecontroller;
 use App\Http\Controllers\SettingsController;
 
@@ -12,16 +11,19 @@ use App\Http\Controllers\BookingsController;
 use App\Http\Controllers\SpecialistsController;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
-
 
 Route::post('/register', [AuthController::class,'register']);
 Route::post('/logins', [AuthController::class,'logins']);
 Route::post('/logout', [AuthController::class,'logout'])->middleware('auth:sanctum');
 Route::post('/user', [AuthController::class,'user'])->middleware('auth:sanctum');
 Route::post('/updateuser', [AuthController::class,'updateuser'])->middleware('auth:sanctum');
+// Route::get('login/facebook', [AuthController::class, 'redirectToFacebook']);
+// Route::get('login/facebook/callback', [AuthController::class, 'handleFacebookCallback']);
+// Route::get('login/google', [AuthController::class, 'redirectToGoogle']);
+// Route::get('login/google/callback', [AuthController::class, 'handleGoogleCallback']);
+Route::post('/recoveremail', [AuthController::class,'recoveremail']);
+Route::post('/passwordreset', [AuthController::class,'passwordreset'])->name('password.reset');
+
 
 Route::post('/addservice', [Servicecontroller::class,'addservice'])->middleware('auth:sanctum');
 Route::get('/getservices', [Servicecontroller::class,'getservices'])->middleware('auth:sanctum');

@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoice', function (Blueprint $table) {
-    
-            $table->dateTime( 'paid_date')->nullable()->change();
+        Schema::table('users', function (Blueprint $table) {
+            $table->string( 'personalnr')->nullable()->change();
+            $table->string( 'bank')->nullable()->change();
+            $table->string('scope')->default('all')->change();
+
+
         });
     }
 
@@ -22,6 +25,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('users', function (Blueprint $table) {
+            //
+        });
     }
 };

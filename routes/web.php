@@ -3,6 +3,7 @@
 use App\Mail\Booking;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,4 +20,5 @@ Route::get('send-mail', function () {
    
     return 'Email sent at ' . now();
 });
+
 

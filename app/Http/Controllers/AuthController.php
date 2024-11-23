@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Clients;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -17,7 +18,7 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-   
+
 
         $validator = Validator::make($request->all(), [
             'Email' => 'email|required| unique:users',
@@ -26,7 +27,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return  [
+            return [
                 'message' => 'Nepareizs e-pasts!',
             ];
         }
@@ -37,8 +38,8 @@ class AuthController extends Controller
             'password' => bcrypt($request->input('Password')),
             'scope' => $request->input('scope'),
             'urlname' => $request->input('urlname'),
-            'personalnr' =>$request->input('personalnr'),
-            'bank' =>$request->input('bank')
+            'personalnr' => $request->input('personalnr'),
+            'bank' => $request->input('bank')
         ]);
 
 
@@ -52,21 +53,20 @@ class AuthController extends Controller
 
     public function logins(Request $request)
     {
-
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users',
             'password' => 'required',
-         ], [
+        ], [
             'email.exists' => 'The provided email does not match our records.',
         ]);
 
         if ($validator->fails()) {
-            return   ['message' => 'Nepareizs e-pasts!']; 
+            return ['message' => 'Nepareizs e-pasts!'];
         }
 
         $user = User::where(['email' => $request->email, 'scope' => $request->scope])->first();
 
-        if (!$user || Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return [
                 'message' => 'Nepareiza parole un/vai e-pasts!',
             ];
@@ -98,15 +98,24 @@ class AuthController extends Controller
     {
         $userDetails = Auth::user();  // To get the logged-in user details
         $user = User::find($userDetails->id);
-                 if ($request->hasFile('file')) {
+        if ($request->hasFile('file')) {
 
-                     $path = $request->file('file')->store('images', 'public');
+            $path = $request->file('file')->store('images', 'public');
 
 
-                    $user->avatar = $path;
-                }
+            $user->avatar = $path;
+        }
         $user->update($request->all());
         $user->save();
+
+        if ($request->email) {
+            $client = Clients::where('userid', $user->id)->first();
+            $client->update([
+                'email' => $request->email
+            ]);
+            info( $client);
+
+        }
 
         return $user;
     }
@@ -119,34 +128,34 @@ class AuthController extends Controller
     public function handleFacebookCallback()
     {
         try {
-            
+
             $user = Socialite::driver('facebook')->stateless()->user();
             $finduser = User::where('email', $user->email)->first();
-        
+
             if ($finduser) {
                 Auth::login($finduser);
                 $token = $finduser->createToken($user->email);
 
-            
+
                 User::where('email', $user->email)->update([
                     'facebook_id' => $user->id
                 ]);
-            
+
                 return redirect()->intended('http://localhost:3000/');
             } else {
                 $newUser = User::create([
                     'name' => $user->name,
                     'email' => $user->email,
-                    'facebook_id'=> $user->id,
+                    'facebook_id' => $user->id,
                     'password' => encrypt('123456dummy')
                 ]);
-        
+
 
                 Auth::login($newUser);
                 return redirect()->intended('http://localhost:3000/');
             }
 
-       
+
         } catch (\Exception $e) {
             dd($e->getMessage());
         }
@@ -162,9 +171,8 @@ class AuthController extends Controller
     {
         $googleUser = Socialite::driver('google')->stateless()->user();
         $user = User::where('email', $googleUser->email)->first();
-        if(!$user)
-        {
-            $user = User::create(['name' => $googleUser->name, 'email' => $googleUser->email, 'password' => \Hash::make(rand(100000,999999))]);
+        if (!$user) {
+            $user = User::create(['name' => $googleUser->name, 'email' => $googleUser->email, 'password' => \Hash::make(rand(100000, 999999))]);
         }
 
         Auth::login($user);
@@ -179,16 +187,15 @@ class AuthController extends Controller
         $status = Password::sendResetLink(
             $request->only('email')
         );
-     
-       if($status === Password::RESET_LINK_SENT){
-        return ['status' => __("Esam nosūtījuši Jums e-pastā saiti!")];
-       }
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return ['status' => __("Esam nosūtījuši Jums e-pastā saiti!")];
+        }
 
     }
 
     public function passwordreset(Request $request)
     {
-        info( $request);
 
         $request->validate([
             'token' => 'required',
@@ -202,30 +209,23 @@ class AuthController extends Controller
                 $user->forceFill([
                     'password' => Hash::make($password)
                 ])->setRememberToken(Str::random(60));
-     
+
                 $user->save();
-     
+
                 event(new PasswordReset($user));
             }
         );
 
-    info($status);
-    if ($status == Password::PASSWORD_RESET) {
+        if ($status == Password::PASSWORD_RESET) {
+            return response([
+                'status' => 'Parole nomainīta veiksmīgi!'
+            ]);
+        }
+
         return response([
-            'status'=> 'Password reset successfully'
+            'status' => __($status)
         ]);
-    }
 
-    return response([
-        'status'=> __($status)
-    ]);
-    //   if($status === Password::PASSWORD_RESET)
-    //   {
-    //     return ['status' => __("Parole nomainīta!")];
-    //   } else{
-    //     return ['status' => __("Kaut kas nogāja greizi! Mēģini vēlreiz!")];
-
-    //   }
     }
 
 }

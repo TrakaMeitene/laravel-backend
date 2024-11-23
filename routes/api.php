@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Servicecontroller;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SearchController;
 
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\BookingsController;
@@ -58,4 +60,5 @@ Route::post('/saveexternalinvoice', action: [InvoiceController::class,'saveexter
 Route::post('/saveclient', action: [ClientController::class,'saveclient'])->middleware('auth:sanctum');
 Route::post('/getclients', action: [ClientController::class,'getclients'])->middleware('auth:sanctum');
 
+Route::post('/search', action: [SearchController::class, 'search'])->middleware(('auth:sanctum'));
 

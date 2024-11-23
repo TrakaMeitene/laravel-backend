@@ -106,7 +106,6 @@ class SpecialistsController extends Controller
 
             $timesWithoutVacations = $timesWithinWorkingTime->filter(function ($data) use ($vacations, $timesWithinWorkingTime) {
                 $ss = $vacations->map(function ($time) use ($data,$timesWithinWorkingTime) {
-                  //  info(message: Carbon::parse($time)->setTimezone('Europe/Riga')->format('Y-m-d') . " - " . Carbon::parse($data)->format('Y-m-d'));
 
                     if (Carbon::parse($time)->setTimezone('Europe/Riga')->format('Y-m-d') === Carbon::parse($data)->format('Y-m-d')) {
                         return $time;
@@ -125,6 +124,7 @@ class SpecialistsController extends Controller
                 'start' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]),
                 'end' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]),
                 'interval' => $timestoreturn->flatten(),
+                'bez_brivd' => $timesWithoutVacations
             ]);
         }
 

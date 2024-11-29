@@ -12,7 +12,7 @@ class SearchController extends Controller
     {
         $user = Auth::user();
         $search = $request->input('searchvalue');
-        $clients = Clients::where('specialist', $user->id)->where('name', 'like', value: "%$search%")->orWhere('surname', 'like', "%$search%")->orWhere('email', 'like', "%$search%")->get();
+        $clients = Clients::where('specialist', $user->id)->where('name', 'like', value: "%$search%")->orWhere('email', 'like', "%$search%")->get();
         $invoices = Invoice::where('user', $user->id)->with(relations: ['customer'])->where('serial_number', 'like', value: "%$search%")->get();
 
         $response = collect();

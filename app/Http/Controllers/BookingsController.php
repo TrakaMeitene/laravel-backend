@@ -22,7 +22,6 @@ class BookingsController extends Controller
         $date = Carbon::parse($request->date);
         $specialist = User::find($request->specialist);
 
-
         switch ($user->scope) {
             case "all":
                 $servicetime = $specialist->services->where('id', $request->service)->first();
@@ -35,7 +34,7 @@ class BookingsController extends Controller
         $time = $servicetime->time;
         $dateforend = clone $date->setTimezone('Europe/Riga');
         $end = $dateforend->addMinutes($time - 1);
-        $allbookings = $user->bookings;
+        $allbookings = $user->bookings->where('statuss', 'active');
         $items = $allbookings->whereBetween('end', [$date, $end]);
 
         if ($items->isEmpty()) {
@@ -55,7 +54,6 @@ class BookingsController extends Controller
             if ($clientexists->isEmpty()) {
                 Clients::Create([
                     'name' => $names[0],
-                    'surname' => $names[1],
                     'phone' => $request->phone,
                     'email' => $request->email,
                     'specialist' => $specialist ? $specialist->id : $user->id,
@@ -64,7 +62,7 @@ class BookingsController extends Controller
                 ]);
             }
 
-            Mail::to($request->email, $specialist->email)->send(new BookingMail($booking, $specialist));
+           Mail::to($request->email, $specialist->email)->send(new BookingMail($booking, $specialist));
             Mail::to($specialist->email, $specialist->email)->send(new BookingSpecialist($booking, $user, $request, $servicetime));
 
         } else {

@@ -13,7 +13,6 @@ use Carbon\Carbon;
 use App\Models\Invoice as Bill;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Invoice as InvoiceMail;
-use Illuminate\Pagination\Paginator;
 
 class InvoiceController extends Controller
 {
@@ -38,6 +37,8 @@ class InvoiceController extends Controller
     public function makeinvoice(Request $request)
     {
         $specialist = User::where('id', $request->specialist)->first();
+        //pro lietotājiem veido un sūta rēķinu, bezmaksas nē
+        if($specialist->abonament != "bezmaksas"){
         $service = Service::where('id', $request->service)->first();
         $serialNumber = self::generateSerial();
         $customer = new Buyer([
@@ -88,70 +89,89 @@ class InvoiceController extends Controller
 
         return $link;
     }
+    }
 
     public function getCustomerInvoices(Request $request)
     {
-        $user = Auth::user();
-
         $page = $request->current;
 
-        if ($request->month) {
-            $invoices = Bill::orderBy('created_at', 'DESC')->with(relations: ['specialist'])->where('customer', $user->id)->whereBetween(
-                'created_at',
-                [
-                    Carbon::createFromDate(2024, $request->month, 1, 'Europe/Riga'),
-                    Carbon::createFromDate(2024, $request->month, 31, 'Europe/Riga')
-                ]
-            )->paginate(4, ['*'], 'page');
+        $query = Bill::with(['specialist'])->orderBy('created_at', 'desc');
 
-        } else {
-            $invoices = Bill::orderBy('created_at', 'DESC')->with(relations: ['specialist'])->where('customer', $user->id)
-                ->paginate(4, ['*'], 'page', $page);
+        if (
+            $request->month &&
+            ($request->prevmonth != $request->month || $request->prevStatus != $request->status)
+        ) {
+            $page = 1;
+        } 
+
+        if ($request->month) {
+            $query->whereBetween('created_at', [
+                Carbon::createFromDate(2024, $request->month, 1, 'Europe/Riga'),
+                Carbon::createFromDate(2024, $request->month, 31, 'Europe/Riga'),
+            ]);
         }
+
+        if ($request->status != "Visi") {
+            $query->where('status', match ($request->status) {
+                "Apmaksāts" => "paid",
+                "Neapmaksāts" => "unpaid",
+                "Anulēts" => "cancelled",
+                default => "*", // Handle unexpected values gracefully
+            });
+        }
+
+        $invoices = $query->paginate(4, ['*'], 'page', $page);
+
 
 
         return $invoices;
     }
 
-    public function getSpecialistInvoices(Request $request)
+   
+
+    public function getSpecialistinvoices(Request $request)
     {
         $page = $request->current;
+
+        $query = Bill::with(['customer'])->orderBy('created_at', 'desc');
+        if (
+            $request->month &&
+            ($request->prevmonth != $request->month || $request->prevType != $request->type || $request->prevStatus != $request->status)
+        ) {
+            $page = 1;
+        } 
+
+        // Month filter
         if ($request->month) {
-            if ($request->prevmonth != $request->month || $request->prevType != $request->type) {
-                $page = 1;
-            }
-
-            $invoices = Bill::with(relations: ['customer'])
-                ->whereBetween(
-                    'created_at',
-                    [
-                        Carbon::createFromDate(2024, $request->month, 1, 'Europe/Riga'),
-                        Carbon::createFromDate(2024, $request->month, 31, 'Europe/Riga')
-                    ]
-                )
-                ->where('type', operator: $request->type === "Izdevumi" ? "expenses" : "income")
-                ->orderBy('created_at', 'desc')
-                ->paginate(4, ['*'], 'page', $page);
-
-        } else {
-            if($request->prevType != $request->type) {
-                $page = 1;
-            };
-            if ($request->type != "Ieņēmumi/izdevumi") {
-                $invoices = Bill::with(relations: ['customer'])
-                    ->where('type', operator: $request->type === "Izdevumi" ? "expenses" : "income")
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(4, ['*'], 'page', $page);
-            } else {
-                $invoices = Bill::with(relations: ['customer'])
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(4, ['*'], 'page', $page);
-            }
+            $query->whereBetween('created_at', [
+                Carbon::createFromDate(2024, $request->month, 1, 'Europe/Riga'),
+                Carbon::createFromDate(2024, $request->month, 31, 'Europe/Riga'),
+            ]);
         }
 
-        return $invoices;
+    
+        if($request->type != "Ieņēmumi/izdevumi" ){
+            $query->where('type', match($request->type ){
+             "Izdevumi" => "expenses",
+             'Ieņēmumi' => "income",
+             default => null
+            });
+        }
+    
+        if ($request->status != "Visi") {
+            $query->where('status', match ($request->status) {
+                "Apmaksāts" => "paid",
+                "Neapmaksāts" => "unpaid",
+                "Anulēts" => "cancelled",
+                default => null // Handle unexpected values gracefully
+            });
+        }
 
-    }
+        $invoices = $query->paginate(4, ['*'], 'page', $page);
+
+
+        return $invoices;
+    } 
 
     public function updateInvoice(Request $request)
     {

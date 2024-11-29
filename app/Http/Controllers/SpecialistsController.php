@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Arr;
 use Carbon\CarbonImmutable;
-use DB;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Models\Vacation;
 use Carbon\CarbonInterval;
 
 class SpecialistsController extends Controller

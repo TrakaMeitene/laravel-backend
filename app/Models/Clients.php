@@ -11,10 +11,16 @@ class Clients extends Model
 
     protected $fillable = [
         'name',
-        'surname',
         'phone',
         'email',
         'specialist',
-        'userid'
+        'userid',
+        'rating',
+        'attended'
     ];
+
+    public function specialist()
+    {
+        return $this->belongsTo(User::class, 'specialist', 'id');
+    }
 }

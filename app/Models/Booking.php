@@ -18,7 +18,7 @@ class Booking extends Model
         'user',
         'made_by',
         'statuss',
-
+        'visited'
     ];
 
     public function specialist()
@@ -33,6 +33,6 @@ class Booking extends Model
 
     public function service()
     {
-        return $this->belongsTo( Service::class, 'service', 'id');
+        return $this->belongsTo(Service::class, 'service', 'id');
     }
 }

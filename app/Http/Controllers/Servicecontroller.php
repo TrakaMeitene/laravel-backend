@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use Illuminate\Http\Request;
-use App\Http\Requests;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -29,9 +28,10 @@ class Servicecontroller extends Controller
     public function getservices(Request $request)
     {
         $userDetails = Auth::user();  // To get the logged-in user details
-        $user = User::find($userDetails->id);
 
-        $services = DB::table('services')->where('user', $userDetails->id)->get();
+        $page = $request->current;
+        $services = DB::table('services')->where('user', $userDetails->id)->paginate(7, ['*'], 'page', $page);
+
         return $services;
     }
 

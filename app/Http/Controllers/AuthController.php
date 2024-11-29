@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Clients;
-use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -113,7 +112,6 @@ class AuthController extends Controller
             $client->update([
                 'email' => $request->email
             ]);
-            info( $client);
 
         }
 

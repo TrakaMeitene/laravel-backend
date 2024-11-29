@@ -28,7 +28,7 @@ Route::post('/passwordreset', [AuthController::class,'passwordreset'])->name('pa
 
 
 Route::post('/addservice', [Servicecontroller::class,'addservice'])->middleware('auth:sanctum');
-Route::get('/getservices', [Servicecontroller::class,'getservices'])->middleware('auth:sanctum');
+Route::post('/getservices', [Servicecontroller::class,'getservices'])->middleware('auth:sanctum');
 Route::post('getservicebyid', [Servicecontroller::class, 'getservicebyid'])->middleware('auth:sanctum');
 Route::post( '/getservicesforspecialist', [Servicecontroller::class,'getservicesforspecialist']);
 Route::delete('/deleteservice/{id}', [Servicecontroller::class, 'deleteservice']);
@@ -62,3 +62,4 @@ Route::post('/getclients', action: [ClientController::class,'getclients'])->midd
 
 Route::post('/search', action: [SearchController::class, 'search'])->middleware(('auth:sanctum'));
 
+Route::post('/clientvisited', [ClientController::class, 'clientvisited'])->middleware(('auth:sanctum'));

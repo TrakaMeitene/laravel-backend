@@ -49,31 +49,34 @@ class ClientController extends Controller
         } else {
             $client = Clients::where('userid', $request->data['made_by'])->first();
             //bookings meklē pēc userid
-            $allbookings = Booking::where('made_by',  $request->data['made_by'])->get();
-                    }
+            $allbookings = Booking::where('made_by', $request->data['made_by'])->get();
+        }
+        if ($client) {
             $client->increment('attended', 1);
-        //jāaprēķina reitings un tas jāsaglabā 
-        $totalcount = collect($allbookings)->count();
-         $visitedcount = $client->attended;
-         $rating = ($visitedcount/$totalcount) *100;
-         $ratingvalue = 0;
-         if ($rating >= 90) {
-            $ratingvalue= 5;
-        } elseif ($rating >= 75) {
-            $ratingvalue= 4;
-        } elseif ($rating >= 50) {
-            $ratingvalue= 3;
-        } elseif ($rating >= 25) {
-            $ratingvalue= 2;
-        } else {
-            $ratingvalue= 1;
+
+            //jāaprēķina reitings un tas jāsaglabā 
+            $totalcount = collect($allbookings)->count();
+            $visitedcount = $client->attended;
+            $rating = ($visitedcount / $totalcount) * 100;
+            $ratingvalue = 0;
+            if ($rating >= 90) {
+                $ratingvalue = 5;
+            } elseif ($rating >= 75) {
+                $ratingvalue = 4;
+            } elseif ($rating >= 50) {
+                $ratingvalue = 3;
+            } elseif ($rating >= 25) {
+                $ratingvalue = 2;
+            } else {
+                $ratingvalue = 1;
+            }
+
+            $client->update([
+                'rating' => $ratingvalue
+            ]);
+            return ['message' => "Dati saglabāti veiksmīgi", 'type' => 'success'];
         }
 
-        $client->update([
-            'rating' => $ratingvalue
-        ]);
-info($rating);
-
-
+        return ['message' => "Klients nav atrasts", 'type' => 'error'];
     }
 }

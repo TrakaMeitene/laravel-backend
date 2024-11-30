@@ -33,7 +33,7 @@ class InvoiceController extends Controller
 
         return $newSerial;
     }
-
+ 
     public function makeinvoice(Request $request)
     {
         $specialist = User::where('id', $request->specialist)->first();

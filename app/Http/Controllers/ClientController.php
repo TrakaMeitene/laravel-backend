@@ -10,9 +10,12 @@ class ClientController extends Controller
 {
     public function saveclient(Request $request)
     {
+        info($request);
         $user = Auth::user();
 
-        Clients::Create([
+        Clients::updateOrCreate([
+            'id' => $request->id], 
+            [
             'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,

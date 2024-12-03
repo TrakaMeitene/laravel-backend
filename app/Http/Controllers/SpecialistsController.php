@@ -31,10 +31,10 @@ class SpecialistsController extends Controller
 
     public function getspecialistbyid(Request $request)
     {
-        $id = $request->id;
+        $id = $request['id'];
         $specialistbyid = User::where('id', $id )->get();
 
-        return $specialistbyid[0];
+        return $specialistbyid;
     }
 
     public function getSpecialistsTimes(Request $request)

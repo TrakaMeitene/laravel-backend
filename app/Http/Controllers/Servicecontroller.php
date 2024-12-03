@@ -12,10 +12,9 @@ class Servicecontroller extends Controller
 {
     public function addservice(Request $request)
     {
-        info($request);
         $userDetails = Auth::user();  // To get the logged-in user details
         $user = User::find($userDetails->id);
-        $service = Service::updateOrCreate([
+        $service = Service::updateOrCreate( ['id' => $request->id], [
             'name' => $request->input('name'),
             'price' => $request->input('price'),
             'time' => $request->input('time'),

@@ -48,12 +48,11 @@ class BookingsController extends Controller
                 'made_by' => $user->id,
                 'statuss' => 'active'
             ]);
-            $names = explode(' ', $request->title);
 
             $clientexists = $specialist ? $specialist->clients->where('userid', $user->id) : $user->clients->where('userid', $user->id);
             if ($clientexists->isEmpty()) {
                 Clients::Create([
-                    'name' => $names[0],
+                    'name' => $request->name,
                     'phone' => $request->phone,
                     'email' => $request->email,
                     'specialist' => $specialist ? $specialist->id : $user->id,

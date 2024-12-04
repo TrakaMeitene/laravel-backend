@@ -10,7 +10,6 @@ class ClientController extends Controller
 {
     public function saveclient(Request $request)
     {
-        info($request);
         $user = Auth::user();
 
         Clients::updateOrCreate([
@@ -30,8 +29,9 @@ class ClientController extends Controller
     {
 
         $page = $request->current;
+        $user = Auth::user();
 
-        $clients = Clients::with(relations: ['specialist'])->paginate(7, ['*'], 'page', $page);
+        $clients = Clients::where('specialist', $user->id )->paginate(7, ['*'], 'page', $page);
         return $clients;
     }
 

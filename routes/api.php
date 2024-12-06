@@ -37,7 +37,9 @@ Route::post('/addsettings', [SettingsController::class,'addsettings'])->middlewa
 Route::get('/getsettings', [SettingsController::class,'getsettings'])->middleware('auth:sanctum');
 
 Route::post('/savevacation', [VacationController::class,'SaveVacation'])->middleware('auth:sanctum');
-Route::post('/getvacation', [VacationController::class,'GetVacation'])->middleware('auth:sanctum');
+Route::post('/getvacation',  action: [VacationController::class,'GetVacation'])->middleware('auth:sanctum');
+Route::post('/getvacationbyspecid',   [VacationController::class,'GetVacationsbySpecId'])->middleware('auth:sanctum');
+Route::delete('/deletevacation/{id}', [VacationController::class, 'deletevacation']);
 
 Route::post('/savebooking', [BookingsController::class,'Savebooking'])->middleware('auth:sanctum');
 Route::post('/getbookings', [BookingsController::class,'getbookings'])->middleware('auth:sanctum');

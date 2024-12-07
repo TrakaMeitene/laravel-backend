@@ -35,9 +35,12 @@ class BookingsController extends Controller
         $dateforend = clone $date->setTimezone('Europe/Riga');
         $end = $dateforend->addMinutes($time - 1);
         $allbookings = $user->bookings->where('statuss', 'active');
-        $items = $allbookings->whereBetween('end', [$date, $end]);
 
-        if ($items->isEmpty()) {
+        //ja start nav tajā sarakstā, tad rodas problēma
+        $include = $allbookings->whereBetween('end', [$date, $end])->whereBetween('date', [Carbon::parse($date)->startOfDay(), $end]); //ja viss periods iekļaujas, problēmu nav. ja sākums  ir ārpusē, tad ir problēma. 
+        $includeend = $allbookings->whereBetween('date', [Carbon::parse($date)->startOfDay(), $end]); //ja viss periods iekļaujas, problēmu nav. ja sākums  ir ārpusē, tad ir problēma. 
+
+        if ($include->isEmpty() && $includeend->isEmpty()) {
             $booking = Booking::create([
                 'title' => $request->input('name'),
                 'date' => $date->setTimezone('Europe/Riga'),

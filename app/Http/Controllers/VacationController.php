@@ -29,6 +29,7 @@ class VacationController extends Controller
     public function GetVacation(Request $request)
     {
         $user = Auth::user();
+
         if ($request->start) {
             $start = Carbon::parse($request->start)->setTimezone('Europe/Riga')->format('Y-m-d');
             $end = Carbon::parse($request->end)->setTimezone('Europe/Riga')->format('Y-m-d');
@@ -36,8 +37,8 @@ class VacationController extends Controller
             $start = Carbon::parse($request[0])->setTimezone('Europe/Riga')->format('Y-m-d');
             $end = Carbon::parse($request[6])->setTimezone('Europe/Riga')->format('Y-m-d');
         }
-        //to do: parskatīt vai te strādā
-        $items = $user->vacation->whereBetween('date', [$start, $end])->get();
+
+        $items = $user->vacation->whereBetween('date', [$start, $end])->flatten();
 
         return $items;
     }

@@ -25,21 +25,21 @@ class SpecialistsController extends Controller
     {
         $name = $request->name;
         $specialistbyname = User::where(['urlname' => $name])->get();
-        
+
         return $specialistbyname;
     }
 
     public function getspecialistbyid(Request $request)
     {
         $id = $request['id'];
-        $specialistbyid = User::where('id', $id )->get();
+        $specialistbyid = User::where('id', $id)->get();
 
         return $specialistbyid;
     }
 
     public function getSpecialistsTimes(Request $request)
     {
-       $user = User::where('id', $request->userid)->first();
+        $user = User::where('id', $request->userid)->first();
         $range = $request->range;
         $serviceduration = $user->services->find($request->service)->time;
         $hasBookings = $user->activeBookings->whereBetween('date', [$range[0], Carbon::parse(last($range))->setTimezone('Europe/Riga')->addHours(23)->addMinutes(59)])->flatten();
@@ -97,22 +97,18 @@ class SpecialistsController extends Controller
             $timestoreturn = $timesWithinWorkingTime->diff($timesFromChunksToRemove);
 
             $vacations = $isDayVacation->map(function ($data, $key) {
-                return Carbon::parse($data->date)->toISOString();
+                return Carbon::parse($data->date)->setTimezone('Europe/Riga')->format('y-m-d');
             });
 
 
-            $timesWithoutVacations = $timesWithinWorkingTime->filter(function ($data) use ($vacations, $timesWithinWorkingTime) {
-                $ss = $vacations->map(function ($time) use ($data,$timesWithinWorkingTime) {
-
-                    if (Carbon::parse($time)->setTimezone('Europe/Riga')->format('Y-m-d') === Carbon::parse($data)->format('Y-m-d')) {
-                        return $time;
-                    };
-
-                });
-           
-
-                return $ss;
+            //te izņem brīvdienas/vacations
+            $responseTimes = collect($timestoreturn)->map(function ($date) use ($vacations) {
+                if (!$vacations->contains(Carbon::parse($date)->format('y-m-d'))) {
+                    return $date;
+                };
             });
+
+
 
             $times->push([
                 'date' => $date,
@@ -120,8 +116,8 @@ class SpecialistsController extends Controller
                 'isDayVacation' => $isDayVacation->count() === 1 ? true : false,
                 'start' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]),
                 'end' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]),
-                'interval' => $timestoreturn->flatten(),
-                'bez_brivd' => $timesWithoutVacations
+                'interval' => $responseTimes->flatten()->filter()
+
             ]);
         }
 

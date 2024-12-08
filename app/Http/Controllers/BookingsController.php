@@ -21,7 +21,10 @@ class BookingsController extends Controller
         $user = Auth::user();
         $date = Carbon::parse($request->date);
         $specialist = User::find($request->specialist);
-
+        if (Carbon::parse($date)->setTimezone('Europe/Riga')->format('H:i') == "00:00") {
+            $date->addSecond();
+        };
+        
         switch ($user->scope) {
             case "all":
                 $servicetime = $specialist->services->where('id', $request->service)->first();
@@ -64,7 +67,7 @@ class BookingsController extends Controller
                 ]);
             }
 
-           Mail::to($request->email, $specialist->email)->send(new BookingMail($booking, $specialist));
+            Mail::to($request->email, $specialist->email)->send(new BookingMail($booking, $specialist));
             Mail::to($specialist->email, $specialist->email)->send(new BookingSpecialist($booking, $user, $request, $servicetime));
 
         } else {
@@ -119,7 +122,7 @@ class BookingsController extends Controller
             'status' => "cancelled"
         ]);
         //specialista atcelta vizite
-        if($request->cancelreason) {
+        if ($request->cancelreason) {
 
             Mail::to($client->email)->send(new CancelledBooking($booking, $request, $client));
 

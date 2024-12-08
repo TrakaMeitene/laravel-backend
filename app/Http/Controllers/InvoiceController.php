@@ -169,7 +169,6 @@ class InvoiceController extends Controller
 
         $invoices = $query->paginate(4, ['*'], 'page', $page);
 
-
         return $invoices;
     } 
 
@@ -182,7 +181,10 @@ class InvoiceController extends Controller
         ]);
 
         $invoices = $user->specialistInvoices;
-        return $invoices;
+        
+        return response([
+            'status' => 'Dati nomainīti veiksmīgi!'
+        ]);
 
     }
 
@@ -226,7 +228,6 @@ class InvoiceController extends Controller
 
     public function saveexternalinvoice(Request $request)
     {
-        info($request);
         $user = Auth::user();
         $path = "";
 

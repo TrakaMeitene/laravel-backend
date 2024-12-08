@@ -57,6 +57,7 @@ Route::post('/getSpecialistInvoices', [InvoiceController::class,'getSpecialistIn
 Route::post('/updateInvoice', action: [InvoiceController::class,'updateInvoice'])->middleware('auth:sanctum');
 Route::post('/getsumm', action: [InvoiceController::class,'getsumm'])->middleware('auth:sanctum');
 Route::post('/saveexternalinvoice', action: [InvoiceController::class,'saveexternalinvoice'])->middleware('auth:sanctum');
+Route::post('/getyearsofbills', action: [InvoiceController::class,'Getyearsofbills'])->middleware('auth:sanctum');
 
 
 Route::post('/saveclient', action: [ClientController::class,'saveclient'])->middleware('auth:sanctum');

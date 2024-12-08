@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoice', function (Blueprint $table) {
-          
-            $table->string( 'service');
-            $table->integer( 'price');
-
-        });
+  
+            Schema::table('invoice', function (Blueprint $table) {
+              
+                $table->bigInteger(column: 'price')->change();
+    
+            });
+    
     }
 
     /**

@@ -21,10 +21,23 @@ class BookingsController extends Controller
         $user = Auth::user();
         $date = Carbon::parse($request->date);
         $specialist = User::find($request->specialist);
+
+      
+        $isAbonent = $specialist->abonament;
+
+        if ($isAbonent === "bezmaksas") {
+            $allbookings = $specialist->bookings;
+            $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
+            if ($count >= 20) {
+                return "Ir sasniegts mēneša rezervāciju limits!";
+            }
+        }
+
         if (Carbon::parse($date)->setTimezone('Europe/Riga')->format('H:i') == "00:00") {
             $date->addSecond();
-        };
-        
+        }
+        ;
+
         switch ($user->scope) {
             case "all":
                 $servicetime = $specialist->services->where('id', $request->service)->first();

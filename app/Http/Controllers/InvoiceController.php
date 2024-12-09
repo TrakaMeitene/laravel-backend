@@ -132,10 +132,7 @@ class InvoiceController extends Controller
     public function getSpecialistinvoices(Request $request)
     {
         $page = $request->current;
-info(                Carbon::createFromDate($request->selctedyear ? (int)$request->selectedyear : Carbon::now()->format('Y'), 1, 1, 'Europe/Riga'),
-);
-info(                Carbon::createFromDate($request->selctedyear ? (int)$request->selectedyear : Carbon::now()->format('Y'), 12, 31, 'Europe/Riga')
-);
+
         $query = Bill::with(['customer'])->orderBy('created_at', 'desc');
         if (
             $request->month &&
@@ -153,7 +150,6 @@ info(                Carbon::createFromDate($request->selctedyear ? (int)$reques
         
         }
 
-        info($query->paginate(4, ['*'], 'page', $page));
 
         // Month filter
         if ($request->month) {
@@ -275,7 +271,7 @@ info(                Carbon::createFromDate($request->selctedyear ? (int)$reques
         $years = collect();
         foreach ($invoices as $key => $value) {
             $years->push(
-Carbon::parse($value->created_at)->format('Y')
+(int)Carbon::parse($value->created_at)->format('Y')
             );
         }
 return $years->unique()->flatten();

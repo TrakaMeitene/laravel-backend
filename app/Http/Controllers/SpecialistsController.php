@@ -18,6 +18,19 @@ class SpecialistsController extends Controller
                 $query->where('occupation', $request->occupation);
             })
             ->get();
+
+        foreach ($specialists as $key => $value) {
+
+            $isAbonent = $value->abonament;
+
+            if ($isAbonent === "bezmaksas") {
+                $allbookings = $value->bookings;
+                $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
+                if ($count >= 20) {
+                    $specialists->forget($key);
+                }
+            }
+        }
         return $specialists;
     }
 
@@ -48,6 +61,17 @@ class SpecialistsController extends Controller
         $bookings = $hasBookings->map(function ($booking, $key) {
             return CarbonInterval::minutes(60)->toPeriod(Carbon::parse($booking->date)->setTimezone('Europe/Riga'), Carbon::parse($booking->end)->setTimezone('Europe/Riga'));
         });
+
+        $isAbonent = $user->abonament;
+
+        if ($isAbonent === "bezmaksas") {
+            $allbookings = $user->bookings;
+            $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
+            if ($count >= 20) {
+                return ["Pieraksts aizvērts!"];
+            }
+        }
+
 
         foreach ($range as $key => $date) {
             $daySettings = $user->settings->where('day', Carbon::parse($date)->setTimezone('Europe/Riga')->dayOfWeekIso)->flatten();

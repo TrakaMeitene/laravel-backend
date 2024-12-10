@@ -50,6 +50,7 @@ Route::post('/getspecialists', [SpecialistsController::class, 'getspecialists'])
 Route::post('/getspecialistbyname', [SpecialistsController::class,'getspecialistbyname']);
 Route::post('/getspecialiststimes', [SpecialistsController::class,'getSpecialistsTimes']);
 Route::post('/getspecialistbyid', [SpecialistsController::class,'getspecialistbyid']);
+Route::get('/getspecialistapi', [SpecialistsController::class, "getspecialistapi"]);
 
 Route::post('/makeinvoice', action: [InvoiceController::class,'makeinvoice']);
 Route::post('/getCustomerInvoices', action: [InvoiceController::class,'getCustomerInvoices'])->middleware('auth:sanctum');

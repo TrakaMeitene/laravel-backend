@@ -75,22 +75,25 @@ class SpecialistsController extends Controller
 
         foreach ($range as $key => $date) {
             $daySettings = $user->settings->where('day', Carbon::parse($date)->setTimezone('Europe/Riga')->dayOfWeekIso)->flatten();
+
+
             $isDayVacation = $user->vacation->where('date', Carbon::parse($date)->setTimezone('Europe/Riga')->format('Y-m-d'))->flatten();
-            $startHour = explode(':', $daySettings[0]->from);
-            $endTimechunks = explode(':', $daySettings[0]->to);
-            $breakFrom = explode(':', $daySettings[0]->breakfrom);
-            $breakTo = explode(':', $daySettings[0]->breakto);
+            $startHour = $daySettings->count() == 0 ? "8.00" : explode(':', $daySettings[0]->from);
+            $endTimechunks = $daySettings->count() == 0 ? "17.00" : explode(':', $daySettings[0]->to);
+            $breakFrom = $daySettings->count() == 0 ? "12.00" : explode(':', $daySettings[0]->breakfrom);
+            $breakTo = $daySettings->count() == 0 ? "13.00" : explode(':', $daySettings[0]->breakto);
             $breakstartdate = Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $breakFrom[0])->addMinutes((int) $breakFrom[1]);
             $breakenddate = Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $breakTo[0])->addMinutes((int) $breakTo[1]);
             $breakinterval = CarbonInterval::minutes(60)->toPeriod($breakstartdate, $breakenddate->addMinutes(-1))->toArray();
             $interval = CarbonInterval::minutes(60)->toPeriod(Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]))->toArray();
             $timesWithoutBreak = array_values(array_diff($interval, $breakinterval));
 
-            $bookingsRemoved = $bookings->map(function ($booking) use ($date, $timesWithoutBreak) {
+            $bookingsRemoved = $bookings->count() != 0 && $bookings->map(function ($booking) use ($date, $timesWithoutBreak) {
                 if (($booking->toArray())[0]->format('y-m-d') === Carbon::parse($date)->setTimezone('Europe/Riga')->format('y-m-d')) {
                     return $booking->toArray();
                 }
             });
+
 
             $timesWhitoutBookings = collect($timesWithoutBreak)->filter(function ($date) use ($bookingsRemoved) {
                 return !in_array($date, $bookingsRemoved->filter()->flatten()->toArray());
@@ -148,5 +151,11 @@ class SpecialistsController extends Controller
 
         return $times;
 
+    }
+
+    public function getspecialistapi()
+    {
+        info("te atnaca");
+        return "teksts";
     }
 }

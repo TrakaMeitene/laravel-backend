@@ -94,8 +94,9 @@ class InvoiceController extends Controller
     public function getCustomerInvoices(Request $request)
     {
         $page = $request->current;
+        $user = Auth::user();
 
-        $query = Bill::with(['specialist'])->orderBy('created_at', 'desc');
+        $query = Bill::where('customer', $user->id)->with(['specialist'])->orderBy('created_at', 'desc');
 
         if (
             $request->month &&
@@ -132,8 +133,9 @@ class InvoiceController extends Controller
     public function getSpecialistinvoices(Request $request)
     {
         $page = $request->current;
+        $user = Auth::user();
 
-        $query = Bill::with(['customer'])->orderBy('created_at', 'desc');
+        $query = Bill::where('user', $user->id)->with(['customer'])->orderBy('created_at', 'desc');
         if (
             $request->month &&
             ($request->prevmonth != $request->month || $request->prevType != $request->type || $request->prevStatus != $request->status)
@@ -141,21 +143,21 @@ class InvoiceController extends Controller
             $page = 1;
         }
 
-        if($request->selectedyear){
+        if ($request->selectedyear) {
             $query->whereBetween('created_at', [
-                Carbon::createFromDate($request->selectedyear ? (int)$request->selectedyear : Carbon::now()->format('Y'), 1, 1, 'Europe/Riga'),
-                Carbon::createFromDate($request->selectedyear ? (int)$request->selectedyear : Carbon::now()->format('Y'), 12, 31, 'Europe/Riga'),
+                Carbon::createFromDate($request->selectedyear ? (int) $request->selectedyear : Carbon::now()->format('Y'), 1, 1, 'Europe/Riga'),
+                Carbon::createFromDate($request->selectedyear ? (int) $request->selectedyear : Carbon::now()->format('Y'), 12, 31, 'Europe/Riga'),
 
             ]);
-        
+
         }
 
 
         // Month filter
         if ($request->month) {
             $query->whereBetween('created_at', [
-                Carbon::createFromDate($request->selctedyear ? (int)$request->selectedyear : Carbon::now()->format('Y'), $request->month, 1, 'Europe/Riga'),
-                Carbon::createFromDate($request->selectedyear ? (int)$request->selectedyear : Carbon::now()->format('Y'), $request->month, 31, 'Europe/Riga'),
+                Carbon::createFromDate($request->selctedyear ? (int) $request->selectedyear : Carbon::now()->format('Y'), $request->month, 1, 'Europe/Riga'),
+                Carbon::createFromDate($request->selectedyear ? (int) $request->selectedyear : Carbon::now()->format('Y'), $request->month, 31, 'Europe/Riga'),
             ]);
         }
 
@@ -271,10 +273,10 @@ class InvoiceController extends Controller
         $years = collect();
         foreach ($invoices as $key => $value) {
             $years->push(
-(int)Carbon::parse($value->created_at)->format('Y')
+                (int) Carbon::parse($value->created_at)->format('Y')
             );
         }
-return $years->unique()->flatten();
+        return $years->unique()->flatten();
 
     }
 }

@@ -12,6 +12,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -223,6 +224,26 @@ class AuthController extends Controller
         return response([
             'status' => __($status)
         ]);
+
+    }
+
+    public function setonboardtime(Request $request)
+    {
+        $user = Auth::user();
+        info($user);
+        $user->update([
+            'onboarded' => Carbon::now()->format('y-m-d h:i:s')
+        ]);
+
+        return [ 'onboarder' => Carbon::now()->format('y-m-d h:i:s')];
+
+    }
+
+    public function getonboardtime(Request $request)
+    {
+        $user = Auth::user();
+
+        return response([ 'onboarder' => $user->onboarded]);
 
     }
 

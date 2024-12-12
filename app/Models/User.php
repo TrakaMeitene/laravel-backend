@@ -35,7 +35,8 @@ class User extends Authenticatable
         'urlname',
         'bank',
         'facebook_id',
-        'abonament'
+        'abonament',
+        'onboarded'
 
     ];
 

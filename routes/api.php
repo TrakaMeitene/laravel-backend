@@ -25,6 +25,8 @@ Route::post('/updateuser', [AuthController::class,'updateuser'])->middleware('au
 // Route::get('login/google/callback', [AuthController::class, 'handleGoogleCallback']);
 Route::post('/recoveremail', [AuthController::class,'recoveremail']);
 Route::post('/passwordreset', [AuthController::class,'passwordreset'])->name('password.reset');
+Route::post('/getonboardtime', [AuthController::class,'getonboardtime'])->middleware('auth:sanctum');
+Route::post('/setonboardtime', [AuthController::class,'setonboardtime'])->middleware('auth:sanctum');
 
 
 Route::post('/addservice', [Servicecontroller::class,'addservice'])->middleware('auth:sanctum');

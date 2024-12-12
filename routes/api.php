@@ -47,6 +47,8 @@ Route::post('/savebooking', [BookingsController::class,'Savebooking'])->middlewa
 Route::post('/getbookings', [BookingsController::class,'getbookings'])->middleware('auth:sanctum');
 Route::post('/getbookingsUsermade', [BookingsController::class, 'getbookingsUsermade'])->middleware('auth:sanctum');
 Route::post('/cancelbooking', [BookingsController::class, 'cancelbooking']);
+Route::post('/checklimits', [BookingsController::class, 'checklimits'])->middleware('auth:sanctum');
+
 
 Route::post('/getspecialists', [SpecialistsController::class, 'getspecialists']);
 Route::post('/getspecialistbyname', [SpecialistsController::class,'getspecialistbyname']);

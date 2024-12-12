@@ -22,7 +22,7 @@ class BookingsController extends Controller
         $date = Carbon::parse($request->date);
         $specialist = User::find($request->specialist);
 
-      
+
         $isAbonent = $specialist->abonament;
 
         if ($isAbonent === "bezmaksas") {
@@ -142,6 +142,21 @@ class BookingsController extends Controller
         } else {
             Mail::to($specialist->email)->send(new CancelledBooking($booking, $request, $client));
 
+        }
+    }
+
+    public function checklimits(Request $request)
+    {
+        $user = Auth::user();
+
+        $isAbonent = $user->abonament;
+
+        if ($isAbonent === "bezmaksas") {
+            $allbookings = $user->bookings;
+            $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
+            if ($count >= 20) {
+                return "Ir sasniegts mēneša rezervāciju limits!";
+            }
         }
     }
 }

@@ -230,7 +230,6 @@ class AuthController extends Controller
     public function setonboardtime(Request $request)
     {
         $user = Auth::user();
-        info($user);
         $user->update([
             'onboarded' => Carbon::now()->format('y-m-d h:i:s')
         ]);

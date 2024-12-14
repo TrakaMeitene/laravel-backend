@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Servicecontroller;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SearchController;
@@ -12,6 +12,7 @@ use App\Http\Controllers\VacationController;
 use App\Http\Controllers\BookingsController;
 use App\Http\Controllers\SpecialistsController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\Subscribed;
 
 
 Route::post('/register', [AuthController::class,'register']);
@@ -71,3 +72,7 @@ Route::post('/getclients', action: [ClientController::class,'getclients'])->midd
 Route::post('/search', action: [SearchController::class, 'search'])->middleware(('auth:sanctum'));
 
 Route::post('/clientvisited', [ClientController::class, 'clientvisited'])->middleware(('auth:sanctum'));
+
+Route::post('/stripesession', action: [PaymentController::class, 'stripesession'])->middleware(('auth:sanctum'));
+Route::get('/success', action: [PaymentController::class, 'success'])->name('success-route')->middleware([Subscribed::class]);;
+Route::get('/fail', action: [PaymentController::class, 'fail'])->name('fail-route');

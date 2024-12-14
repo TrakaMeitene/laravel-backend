@@ -4,6 +4,7 @@ use App\Mail\Booking;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,5 +21,8 @@ Route::get('send-mail', function () {
    
     return 'Email sent at ' . now();
 });
+
+Route::get('/success', action: [PaymentController::class, 'success'])->name('success-route');
+Route::get('/fail', action: [PaymentController::class, 'fail'])->name('fail-route');
 
 

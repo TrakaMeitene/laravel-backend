@@ -76,3 +76,4 @@ Route::post('/clientvisited', [ClientController::class, 'clientvisited'])->middl
 Route::post('/stripesession', action: [PaymentController::class, 'stripesession'])->middleware(('auth:sanctum'));
 Route::get('/success', action: [PaymentController::class, 'success'])->name('success-route')->middleware([Subscribed::class]);;
 Route::get('/fail', action: [PaymentController::class, 'fail'])->name('fail-route');
+Route::post('/clientportal', action: [PaymentController::class, 'clientportal'])->middleware('auth:sanctum');

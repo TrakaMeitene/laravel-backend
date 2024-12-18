@@ -113,7 +113,7 @@ class User extends Authenticatable
 
     public function sendPasswordResetNotification($token): void
     {
-        $url = 'http://localhost:3000/login/renewpassword?token='.$token;
+        $url = env('FRONTEND_URL') . '/login/renewpassword?token='.$token;
      
         $this->notify(new ResetPasswordNotification($url));
     }

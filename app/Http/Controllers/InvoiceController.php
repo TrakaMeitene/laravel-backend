@@ -247,7 +247,7 @@ class InvoiceController extends Controller
             $path = $request->file('file')->store('', 'public');
 
         }
-        $sum = $request->sumofbill;
+        $sum = $request->sumofbill * 100;
         $invoice = Bill::Create([
             'user' => $user->id,
             'invoice' => $path,

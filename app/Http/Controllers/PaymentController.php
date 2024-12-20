@@ -47,12 +47,5 @@ class PaymentController extends Controller
         return redirect(env('FRONTEND_URL') . '/admin/failedpayment');
     }
 
-    public function clientportal(Request $request)
-    {
-        $user = Auth::user();
-        return redirect('https://billing.stripe.com/p/login/aEUfZ3bLf5Dpcp2144');
-
-       // info($user->subscriptions->where('type', 'prod_ROmEFILN29hPqt'));
-     
-    }
+ 
 }

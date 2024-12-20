@@ -23,7 +23,7 @@ class SpecialistsController extends Controller
 
             $isAbonent = $value->abonament;
 
-            if ($isAbonent === "bezmaksas") {
+            if ($isAbonent === "bezmaksas"  && !$value->subscription('prod_ROmEFILN29hPqt')) {
                 $allbookings = $value->bookings;
                 $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
                 if ($count >= 20) {
@@ -64,7 +64,7 @@ class SpecialistsController extends Controller
 
         $isAbonent = $user->abonament;
 
-        if ($isAbonent === "bezmaksas") {
+        if ($isAbonent === "bezmaksas" && !$user->subscription('prod_ROmEFILN29hPqt')) {
             $allbookings = $user->bookings;
             $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
             if ($count >= 20) {

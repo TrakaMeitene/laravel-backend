@@ -25,7 +25,7 @@ class BookingsController extends Controller
 
         $isAbonent = $specialist->abonament;
 
-        if ($isAbonent === "bezmaksas") {
+        if ($isAbonent === "bezmaksas"  && !$user->subscription('prod_ROmEFILN29hPqt')){
             $allbookings = $specialist->bookings;
             $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
             if ($count >= 20) {
@@ -150,8 +150,9 @@ class BookingsController extends Controller
         $user = Auth::user();
 
         $isAbonent = $user->abonament;
+        info($user->subscription('prod_ROmEFILN29hPqt'));
 
-        if ($isAbonent === "bezmaksas") {
+        if ($isAbonent === "bezmaksas" && !$user->subscription('prod_ROmEFILN29hPqt') ) {
             $allbookings = $user->bookings;
             $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
             if ($count >= 20) {

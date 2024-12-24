@@ -151,9 +151,10 @@ class SpecialistsController extends Controller
 
     }
 
-    public function getspecialistapi()
+    public function getspecialistapi(Request $request)
     {
-        info("te atnaca");
-        return "teksts";
+       $id = $request->id;
+       $user = User::find($id);
+        return $user;
     }
 }

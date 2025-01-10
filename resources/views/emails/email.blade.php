@@ -32,7 +32,7 @@
                 </tr>
             </table>
             <p style="color: #666666; font-size: 16px;">
-            Lūdzu, ierodieties 10 minūtes agrāk, lai nodrošinātu visas tikšanās priekšrocības. Ja jums ir nepieciešams pārcelt vizīti, lūdzu, sazinieties ar pakalpojuma sniedzēju.</p>
+            Lūdzu, ierodieties laikā, lai nodrošinātu visas tikšanās priekšrocības. Ja jums ir nepieciešams pārcelt vizīti, lūdzu, sazinieties ar pakalpojuma sniedzēju.</p>
 
             <p style="color: #666666; font-size: 16px;">{{$specialist['name']}}</p>
             <p style="color: #666666; font-size: 16px;">{{$specialist['phone']}}</p>

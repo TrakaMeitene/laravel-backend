@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Mailtrap\MailtrapClient;
+use Mailtrap\Mime\MailtrapEmail;
+use Symfony\Component\Mime\Address;
+
 
 class AuthController extends Controller
 {
@@ -44,6 +48,24 @@ class AuthController extends Controller
 
 
         $token = $user->createToken($request->Name);
+        if ($request->input('scope') == 'business') {
+            $mailtrap = MailtrapClient::initSendingEmails(
+                apiKey: getenv('MAILTRAP_API_KEY') # your API token from here https://mailtrap.io/api-tokens
+            );
+
+            $email = (new MailtrapEmail())
+                ->from(new Address('info@pierakstspie.lv', 'Sveicināti Pieraksts Pie sistēmā!'))
+                ->to(new Address($request->input('Email')))
+                ->templateUuid('bba83ed9-bf46-4a37-aaa8-6070fb57c842')
+                ->templateVariables([
+                    'company_info_name' => 'Sandra Jurberga-Šaudine',
+                    'company_info_city' => 'Liepaja',
+                    'company_info_country' => 'Latvija',
+                ])
+            ;
+
+            $mailtrap->send($email);
+        }
 
         return [
             'user' => $user,
@@ -234,7 +256,7 @@ class AuthController extends Controller
             'onboarded' => Carbon::now()->format('y-m-d h:i:s')
         ]);
 
-        return [ 'onboarder' => Carbon::now()->format('y-m-d h:i:s')];
+        return ['onboarder' => Carbon::now()->format('y-m-d h:i:s')];
 
     }
 
@@ -242,7 +264,7 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        return response([ 'onboarder' => $user->onboarded]);
+        return response(['onboarder' => $user->onboarded]);
 
     }
 

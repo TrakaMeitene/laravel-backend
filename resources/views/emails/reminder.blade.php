@@ -13,7 +13,7 @@
             <h2>pierakstspie.lv</h2>
         </header>
         <div style="padding: 20px; text-align: center;">
-            <h1 style="color: #333333;">Jauns pieraksts ir veikts sistēmā!</h1>
+            <h1 style="color: #333333;">Atgādinājums par vizīti!</h1>
             <p style="color: #666666; font-size: 16px;">Pieraksta detaļas:</p>
             <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
                 @inject('carbon', 'Carbon\Carbon')
@@ -26,17 +26,19 @@
                     <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">Laiks:</td>
                     <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">{{$carbon::parse($booking['date'])->format( "H:i" )}}</td>
                 </tr>
-                <tr>
-                    <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">Klients:</td>
-                    <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">{{$request['name']}}</td>
-                </tr>
+           
                 <tr>
                     <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">Pakalpojums:</td>
                     <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">{{$service['name']}}</td>
                 </tr>
+            
                 <tr>
-                    <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">Piezīmes:</td>
-                    <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">{{$request['description']}}</td>
+                    <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">Speciālists:</td>
+                    <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">{{$specialist['name']}}</td>
+                </tr>
+                <tr>
+                    <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">Atrašanās vieta:</td>
+                    <td style="color: #333333; font-size: 16px; padding: 10px; border: 1px solid #dddddd;">{{$specialist['adress']}}</td>
                 </tr>
             </table>
         </div>

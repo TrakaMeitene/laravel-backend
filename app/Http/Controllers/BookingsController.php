@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\Booking as BookingMail;
 use App\Mail\BookingSpecialist;
 use App\Models\Invoice;
+use Mailtrap\MailtrapClient;
+use Mailtrap\Mime\MailtrapEmail;
 
 class BookingsController extends Controller
 {
@@ -52,7 +54,6 @@ class BookingsController extends Controller
         $end = $dateforend->addMinutes($time - 1);
         $allbookings = $user->bookings->where('statuss', 'active');
 
-        //ja start nav tajā sarakstā, tad rodas problēma
         $include = $allbookings->whereBetween('end', [$date, $end])->whereBetween('date', [Carbon::parse($date)->startOfDay(), $end]); //ja viss periods iekļaujas, problēmu nav. ja sākums  ir ārpusē, tad ir problēma. 
         $includeend = $allbookings->whereBetween('date', [Carbon::parse($date)->startOfDay(), $end]); //ja viss periods iekļaujas, problēmu nav. ja sākums  ir ārpusē, tad ir problēma. 
 
@@ -69,8 +70,9 @@ class BookingsController extends Controller
             ]);
 
             $clientexists = $specialist ? $specialist->clients->where('userid', $user->id) : $user->clients->where('userid', $user->id);
+
             if ($clientexists->isEmpty()) {
-                Clients::Create([
+                $newclient = Clients::Create([
                     'name' => $request->name,
                     'phone' => $request->phone,
                     'email' => $request->email,
@@ -78,10 +80,15 @@ class BookingsController extends Controller
                     'userid' => $user->id
 
                 ]);
+
             }
 
-            Mail::to($request->email, $specialist->email)->send(new BookingMail($booking, $specialist));
-            Mail::to($specialist->email, $specialist->email)->send(new BookingSpecialist($booking, $user, $request, $servicetime));
+            $booking->update([
+                'client' => $request->email
+            ]);
+     
+Mail::mailer('smtp')->to($request->email)->send(new BookingMail($booking, $specialist));
+           Mail::mailer('smtp')->to($specialist->email)->send(new BookingSpecialist($booking, $user, $request, $servicetime));
 
         } else {
             $booking = 'Izvēlētajā laikā jau ir rezervācija. Lūdzu izvēlieties citu laiku.';
@@ -150,7 +157,6 @@ class BookingsController extends Controller
         $user = Auth::user();
 
         $isAbonent = $user->abonament;
-        info($user->subscription('prod_ROmEFILN29hPqt'));
 
         if ($isAbonent === "bezmaksas" && !$user->subscription('prod_ROmEFILN29hPqt') ) {
             $allbookings = $user->bookings;

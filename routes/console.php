@@ -15,10 +15,8 @@ Artisan::command('inspire', function () {
 
 Schedule::call(function () {
     $bookings = Booking::with(relations: ['specialist', 'service'])->where('statuss', 'active')->whereBetween('date', [Carbon::now()->addDay()->startOfDay(), Carbon::now()->addDay()->endOfDay()])->get();
-   info($bookings);
     foreach ($bookings as $booking) {
     $specialist = $booking->specialist;
-    info($specialist->adress);
     $service = Service::where("id", $booking->service)->get();
         Mail::mailer('smtp')->to($booking->client)->send(new Reminder($booking, $service[0], $specialist));
     }

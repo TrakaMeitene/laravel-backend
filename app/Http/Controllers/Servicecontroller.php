@@ -34,6 +34,13 @@ class Servicecontroller extends Controller
         return $services;
     }
 
+    public function getallservices(Request $request)
+    {
+        $userDetails = Auth::user();  // To get the logged-in user details
+        $services = DB::table('services')->where('user', $userDetails->id)->get();
+        return $services;
+    }
+
     public function getservicebyid(Request $request)
     {
         $userDetails = Auth::user();

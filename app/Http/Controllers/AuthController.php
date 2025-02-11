@@ -162,7 +162,7 @@ class AuthController extends Controller
                     'facebook_id' => $user->id
                 ]);
 
-                return redirect()->intended('http://localhost:3000/');
+                return redirect()->intended('/');
             } else {
                 $newUser = User::create([
                     'name' => $user->name,
@@ -173,7 +173,7 @@ class AuthController extends Controller
 
 
                 Auth::login($newUser);
-                return redirect()->intended('http://localhost:3000/');
+                return redirect()->intended('/');
             }
 
 

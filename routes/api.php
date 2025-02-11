@@ -32,12 +32,16 @@ Route::post('/setonboardtime', [AuthController::class,'setonboardtime'])->middle
 
 Route::post('/addservice', [Servicecontroller::class,'addservice'])->middleware('auth:sanctum');
 Route::post('/getservices', [Servicecontroller::class,'getservices'])->middleware('auth:sanctum');
+Route::post('/getallservices', [Servicecontroller::class,'getallservices'])->middleware('auth:sanctum');
 Route::post('getservicebyid', [Servicecontroller::class, 'getservicebyid'])->middleware('auth:sanctum');
 Route::post( '/getservicesforspecialist', [Servicecontroller::class,'getservicesforspecialist']);
 Route::delete('/deleteservice/{id}', [Servicecontroller::class, 'deleteservice']);
 
 Route::post('/addsettings', [SettingsController::class,'addsettings'])->middleware('auth:sanctum');
 Route::get('/getsettings', [SettingsController::class,'getsettings'])->middleware('auth:sanctum');
+
+Route::post('/saveSpecialtimes', [SettingsController::class,'saveSpecialtimes'])->middleware('auth:sanctum');
+Route::post('/getspecialtimes', [SettingsController::class,'getspecialtimes'])->middleware('auth:sanctum');
 
 Route::post('/savevacation', [VacationController::class,'SaveVacation'])->middleware('auth:sanctum');
 Route::post('/getvacation',  action: [VacationController::class,'GetVacation'])->middleware('auth:sanctum');

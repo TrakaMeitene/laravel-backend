@@ -51,7 +51,6 @@ public $serialNumber;
      */
     public function attachments(): array
     {
-        info($this->serialNumber);
         return [
             Attachment::fromPath('storage/' . $this->serialNumber . '.pdf')
                 

@@ -90,6 +90,11 @@ class User extends Authenticatable
         return $this->bookings()->where('statuss', 'active');
     }
 
+    public function specialtimes(): HasMany
+    {
+        return $this->hasMany(Special_availabilities::class, 'specialist', 'id');
+    }
+
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class, 'user', 'id');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Special_availabilities;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class SettingsController extends Controller
 {
@@ -35,8 +36,8 @@ class SettingsController extends Controller
 
         $specialtimes = Special_availabilities::Create([
             'service' => $request->data['service'],
-            'from' => $request->data['from'],
-            'to' => $request->data['to'],
+            'from' => Carbon::CreateFromFormat('H:i', $request->data['from']),
+            'to' => Carbon::CreateFromFormat('H:i', $request->data['to']),
             'days' => json_encode($request->data['days']),
             'specialist' => $user->id
         ]);

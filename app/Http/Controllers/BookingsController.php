@@ -60,7 +60,7 @@ class BookingsController extends Controller
         if ($include->isEmpty() && $includeend->isEmpty()) {
             $booking = Booking::create([
                 'title' => $request->input('name'),
-                'date' => $date->setTimezone('Europe/Riga'),
+                'date' => $date->setTimezone('Europe/Riga')->format('Y-m-d H:i'),
                 'description' => $request->input('description'),
                 'service' => $request->input('service'),
                 'end' => $end,

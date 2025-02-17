@@ -74,102 +74,8 @@ class SpecialistsController extends Controller
             }
         }
 
-
-
-        //jaizņem tie laiki, kas jau ir rezervācijās
-//nerāda pareizi pa dienām
         if ($hasSpecilatimes->count() > 0) {
-            foreach ($hasSpecilatimes as $key => $day) {
-
-                $startHour = explode(":", $day->from);
-                $endTimechunks = explode(":", $day->to);
-
-                $interval = CarbonInterval::minutes($serviceduration)->toPeriod(Carbon::parse(Carbon::now())->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::now()->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]))->toArray();
-                foreach ($range as $key => $date) {
-
-                    $weekday = Carbon::parse($date)->setTimezone('Europe/Riga')->dayOfWeekIso;
-                    $daySettings = $user->settings->where('day', Carbon::parse($date)->setTimezone('Europe/Riga')->dayOfWeekIso)->flatten();
-
-                    $isDayVacation = $user->vacation->where('date', Carbon::parse($date)->setTimezone('Europe/Riga')->format('Y-m-d'))->flatten();
-
-                    if (collect(json_decode($day->days))->flatten()->contains($weekday)) {
-                        $startHour = explode(":", $day->from);
-                        $endTimechunks = explode(":", $day->to);
-
-                        $interval = CarbonInterval::minutes($serviceduration)->toPeriod(Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]))->toArray();
-
-                        $bookingstoremove = $bookings->map(function ($booking) use ($date) {
-                            if (($booking->toArray())[0]->format('y-m-d') === Carbon::parse($date)->setTimezone('Europe/Riga')->format('y-m-d')) {
-                                return $booking->toArray();
-                            }
-                        });
-
-
-
-                        $timesThatOverlapWorkingtime = collect($interval)->map(function ($item, $key) use ($date, $serviceduration, $endTimechunks) {
-                            if (CarbonImmutable::parse($date)->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1])->lessThan(CarbonImmutable::parse($item)->addMinutes($serviceduration))) {
-                                return $item;
-                            }
-                        });
-
-                        $timesWithinWorkingTime = collect($interval)->diff($timesThatOverlapWorkingtime)->flatten();
-
-
-                        $timesWhitoutBookings = collect($timesWithinWorkingTime)->filter(function ($date) use ($bookingstoremove) {
-                            return !in_array($date, $bookingstoremove->filter()->flatten()->toArray());
-                        });
-
-                        $serviceNeededTimes = $timesWhitoutBookings->map(function ($time, $key) use ($serviceduration) {
-                            return CarbonInterval::minutes($serviceduration)->toPeriod($time, CarbonImmutable::parse($time)->addMinutes($serviceduration - 1))->setTimezone('Europe/Riga');
-                        });
-
-                        $bookingEntTimestoremove = $hasBookings->map(function ($booking, $key) use ($timesWhitoutBookings) {
-                            $set = collect();
-
-                            collect($timesWhitoutBookings)->flatten()->unique()->map(function ($item) use ($booking, $set) {
-                                if ($item->between($booking->date, $booking->end)) {
-                                    return $set->push($item);
-                                };
-                            });
-                            return $set->flatten()->filter();
-                        });
-
-                        $timestoreturn = (collect($timesWhitoutBookings)->flatten()->unique()->diff($bookingEntTimestoremove->flatten()));
-
-                        $times->push([
-                            'date' => $date,
-                            'isDayFree' => $daySettings->count() !== 0 ? $daySettings[0]->statuss === 1 ? true : false : true,
-                            'isDayVacation' => $isDayVacation->count() === 1 ? true : false,
-                            'interval' => $timestoreturn,
-                        ]);
-
-                        $result = [];
-
-
-                        foreach ($times as $item) {
-                            $date = $item['date'];
-
-                            if (!isset($result[$date])) {
-                                $result[$date] = [
-                                    "date" => $date,
-                                    "isDayFree" => $item["isDayFree"],
-                                    "isDayVacation" => $item["isDayVacation"],
-                                    "interval" => [],
-                                ];
-                            }
-
-                            // Apvienojam intervālus un nodrošinām, ka tie ir unikāli
-                            $result[$date]['interval'] = collect($result[$date]['interval'])->merge(array($item['interval']));
-                            $result[$date]['interval'] = $result[$date]['interval']->flatten();
-                        }
-
-                    }
-                    ;
-
-                }
-            }
-            $result = array(collect($result)->filter())[0]->sortBy('date');
-            return array_values($result->toArray());
+           return  $this->getSpecialistSpecialTimes($user, $range, $serviceduration, $hasBookings, $bookings);
         }
 
         //īs ir parastajiem laikiem
@@ -234,6 +140,10 @@ class SpecialistsController extends Controller
                 };
             });
 
+            $withoutfreedays = $responseTimes->flatten()->filter()
+            ->filter(  fn ($item) => $daySettings[0]->statuss === 1 );
+
+            info( $withoutfreedays);
 
             $times->push([
                 'date' => $date,
@@ -241,7 +151,7 @@ class SpecialistsController extends Controller
                 'isDayVacation' => $isDayVacation->count() === 1 ? true : false,
                 'start' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]),
                 'end' => Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]),
-                'interval' => $responseTimes->flatten()->filter(),
+                'interval' => $withoutfreedays->flatten()->filter(),
 
             ]);
         }
@@ -250,6 +160,101 @@ class SpecialistsController extends Controller
         return $times;
 
     }
+
+
+    private function getSpecialistSpecialTimes($user, $range, $serviceduration, $hasBookings, $bookings){
+        $hasSpecilatimes = $user->specialtimes->where('service', request()->service);
+        $times = collect();
+
+    foreach ($hasSpecilatimes as $key => $day) {
+        $startHour = explode(":", $day->from);
+        $endTimechunks = explode(":", $day->to);
+
+        $interval = CarbonInterval::minutes($serviceduration)->toPeriod(Carbon::parse(Carbon::now())->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::now()->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]))->toArray();
+        foreach ($range as $key => $date) {
+
+            $weekday = Carbon::parse($date)->setTimezone('Europe/Riga')->dayOfWeekIso;
+            $daySettings = $user->settings->where('day', Carbon::parse($date)->setTimezone('Europe/Riga')->dayOfWeekIso)->flatten();
+
+            $isDayVacation = $user->vacation->where('date', Carbon::parse($date)->setTimezone('Europe/Riga')->format('Y-m-d'))->flatten();
+
+            if (collect(json_decode($day->days))->flatten()->contains($weekday)) {
+                $startHour = explode(":", $day->from);
+                $endTimechunks = explode(":", $day->to);
+
+                $interval = CarbonInterval::minutes($serviceduration)->toPeriod(Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $startHour[0])->addMinutes((int) $startHour[1]), Carbon::parse($date)->setTimezone('Europe/Riga')->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1]))->toArray();
+
+                $bookingstoremove = $bookings->map(function ($booking) use ($date) {
+                    if (($booking->toArray())[0]->format('y-m-d') === Carbon::parse($date)->setTimezone('Europe/Riga')->format('y-m-d')) {
+                        return $booking->toArray();
+                    }
+                });
+
+
+
+                $timesThatOverlapWorkingtime = collect($interval)->map(function ($item, $key) use ($date, $serviceduration, $endTimechunks) {
+                    if (CarbonImmutable::parse($date)->addHours((int) $endTimechunks[0])->addMinutes((int) $endTimechunks[1])->lessThan(CarbonImmutable::parse($item)->addMinutes($serviceduration))) {
+                        return $item;
+                    }
+                });
+
+                $timesWithinWorkingTime = collect($interval)->diff($timesThatOverlapWorkingtime)->flatten();
+
+
+                $timesWhitoutBookings = collect($timesWithinWorkingTime)->filter(function ($date) use ($bookingstoremove) {
+                    return !in_array($date, $bookingstoremove->filter()->flatten()->toArray());
+                });
+
+
+                $bookingEntTimestoremove = $hasBookings->map(function ($booking, $key) use ($timesWhitoutBookings) {
+                    $set = collect();
+
+                    collect($timesWhitoutBookings)->flatten()->unique()->map(function ($item) use ($booking, $set) {
+                        if ($item->between($booking->date, $booking->end)) {
+                            return $set->push($item);
+                        };
+                    });
+                    return $set->flatten()->filter();
+                });
+
+                $timestoreturn = (collect($timesWhitoutBookings)->flatten()->unique()->diff($bookingEntTimestoremove->flatten()));
+
+                $times->push([
+                    'date' => $date,
+                    'isDayFree' => $daySettings->count() !== 0 ? $daySettings[0]->statuss === 1 ? true : false : true,
+                    'isDayVacation' => $isDayVacation->count() === 1 ? true : false,
+                    'interval' => $timestoreturn,
+                ]);
+
+                $result = [];
+
+
+                foreach ($times as $item) {
+                    $date = $item['date'];
+
+                    if (!isset($result[$date])) {
+                        $result[$date] = [
+                            "date" => $date,
+                            "isDayFree" => $item["isDayFree"],
+                            "isDayVacation" => $item["isDayVacation"],
+                            "interval" => [],
+                        ];
+                    }
+
+                    // Apvienojam intervālus un nodrošinām, ka tie ir unikāli
+                    $result[$date]['interval'] = collect($result[$date]['interval'])->merge(array($item['interval']));
+                    $result[$date]['interval'] = $result[$date]['interval']->flatten();
+                }
+
+            }
+            ;
+
+        }
+    }
+    $result = array(collect($result)->filter())[0]->sortBy('date');
+    return array_values($result->toArray());
+}
+
 
 
     public function getspecialistapi(Request $request)

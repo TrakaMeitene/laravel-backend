@@ -38,7 +38,7 @@ class InvoiceController extends Controller
     {
         $specialist = User::where('id', $request->specialist)->first();
         //pro lietotājiem veido un sūta rēķinu, bezmaksas nē
-        if ($specialist->subscription('prod_ROmEFILN29hPqt')) {
+        if ($specialist->subscription('prod_ROHRSQBHhWHvLv')) {
             $service = Service::where('id', $request->service)->first();
             $serialNumber = self::generateSerial();
             $customer = new Buyer([

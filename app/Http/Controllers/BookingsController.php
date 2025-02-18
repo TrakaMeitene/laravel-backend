@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\Booking as BookingMail;
 use App\Mail\BookingSpecialist;
 use App\Models\Invoice;
-use Mailtrap\MailtrapClient;
-use Mailtrap\Mime\MailtrapEmail;
+
 
 class BookingsController extends Controller
 {

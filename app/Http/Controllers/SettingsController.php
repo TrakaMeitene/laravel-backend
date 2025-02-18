@@ -45,6 +45,18 @@ class SettingsController extends Controller
         return $specialtimes;
     }
 
+    public function deletespecialtime(Request $request, $id)
+    {
+
+        $specialtime = Special_availabilities::findOrFail($id);
+        if($specialtime)
+           $specialtime->delete(); 
+        else
+            return response();
+
+    }
+    
+
     public function getspecialtimes(Request $request)
     {
         $user = Auth::user();

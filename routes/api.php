@@ -42,6 +42,7 @@ Route::get('/getsettings', [SettingsController::class,'getsettings'])->middlewar
 
 Route::post('/saveSpecialtimes', [SettingsController::class,'saveSpecialtimes'])->middleware('auth:sanctum');
 Route::post('/getspecialtimes', [SettingsController::class,'getspecialtimes'])->middleware('auth:sanctum');
+Route::delete('/deletespecialtime/{id}', [SettingsController::class, 'deletespecialtime']);
 
 Route::post('/savevacation', [VacationController::class,'SaveVacation'])->middleware('auth:sanctum');
 Route::post('/getvacation',  action: [VacationController::class,'GetVacation'])->middleware('auth:sanctum');

@@ -11,15 +11,14 @@ class PaymentController extends Controller
     public function stripesession(Request $request)
     {
         $user = Auth::user();
-         $stripePriceId = 'price_1QVUsn2K3ttu5uf5yTBUHB55';
-       // $stripePriceId = 'price_1QVyfs2K3ttu5uf5PimEXey3';
+         $stripePriceId = env('STRIPE_PRICE_ID');
 
 
         $quantity = 1;
         $front = env('FRONTEND_URL');
 
         return $user
-            ->newSubscription('prod_ROHRSQBHhWHvLv', $stripePriceId)
+            ->newSubscription(env('STRIPE_PROD_ID'), $stripePriceId)
             ->allowPromotionCodes()
             ->checkout([
                 'success_url' => route('success-route', ['user' => $user]),
@@ -32,7 +31,7 @@ class PaymentController extends Controller
     {
         //te jāieseivo ka ir useris subscription lietotājs
         //jāreturno uz skatu /admin/sucesspayment
-        $stripePriceId = 'price_1QVUsn2K3ttu5uf5yTBUHB55';
+        $stripePriceId = env('STRIPE_PRICE_ID');
 
         User::find($request->user)->update(['abonament' => 'business']);
 

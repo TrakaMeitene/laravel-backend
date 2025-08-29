@@ -26,7 +26,7 @@ class BookingsController extends Controller
 
         $isAbonent = $specialist->abonament;
 
-        if ($isAbonent === "bezmaksas"  && !$user->subscription('prod_ROHRSQBHhWHvLv')){
+        if ($isAbonent === "bezmaksas"  && !$user->subscription(env('STRIPE_PROD_ID'))){
             $allbookings = $specialist->bookings;
             $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
             if ($count >= 20) {
@@ -157,7 +157,7 @@ Mail::mailer('smtp')->to($request->email)->send(new BookingMail($booking, $speci
 
         $isAbonent = $user->abonament;
 
-        if ($isAbonent === "bezmaksas" && !$user->subscription('prod_ROHRSQBHhWHvLv') ) {
+        if ($isAbonent === "bezmaksas" && !$user->subscription(env('STRIPE_PROD_ID')) ) {
             $allbookings = $user->bookings;
             $count = $allbookings->whereBetween("created_at", [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
             if ($count >= 20) {
